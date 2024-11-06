@@ -1,4 +1,5 @@
 "use client"
+import SignIn from "@/components/sign-in";
 import { motion } from "framer-motion";
 
 
@@ -13,6 +14,7 @@ export default function Home() {
       >
         Hi, I am Shashwat Dixit
       </motion.h1>
+      <SignIn />
     </div>
   );
 }
