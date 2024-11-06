@@ -43,6 +43,11 @@ export default function RootLayout({
       <body
         className="antialiased"
       >
+        <div className="fixed inset-0 -z-10">
+          <div className="absolute inset-0 bg-gray-100 [background-size:32px_32px] [background-image:linear-gradient(to_right,rgb(15_25_42/0.2)_1px,transparent_1px),linear-gradient(to_bottom,rgb(15_25_42/0.1)_1px,transparent_1px)] dark:bg-gray-900 dark:opacity-20">
+            <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-white dark:from-gray-900/60 dark:to-gray-900" />
+          </div>
+        </div>
         <Navbar />
         {children}
       </body>

@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { Terminal } from 'lucide-react'
 
 const poppins = Poppins({
     weight: ["400", "600"],
@@ -14,7 +15,7 @@ const poppins = Poppins({
 export default function Navbar() {
     const pathname = usePathname();
     const navItems = [
-        { href: "/", label: "Home" },
+        { href: "/", label: <Terminal /> },
         { href: "/work", label: "Work" },
         { href: "/blog", label: "Blog" },
         { href: "/resume.pdf", label: "Resume" },
