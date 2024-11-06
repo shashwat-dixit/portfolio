@@ -1,4 +1,5 @@
 "use client"
+import ProjectShowcase from "@/components/ProjectShowcase";
 import SignIn from "@/components/sign-in";
 import { motion } from "framer-motion";
 

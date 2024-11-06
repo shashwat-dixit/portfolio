@@ -1,4 +1,5 @@
 'use client'
+import ProjectShowcase from '@/components/ProjectShowcase'
 import { motion } from 'framer-motion'
 
 /*
@@ -12,10 +13,9 @@ export default function WorkPage() {
       initial={{ y: -50, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className="flex justify-center text-3xl text-nowrap absolute left-1/2 right-1/2 top-28 transform -translate-x-1/2"
+      className=""
     >
-      {/* Card elements to showcase work */}
-      Work Page
+      <ProjectShowcase />
     </motion.div>
   )
 }
