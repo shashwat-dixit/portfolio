@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import { Analytics } from "@vercel/analytics/react"
 
 export const metadata: Metadata = {
   title: 'Shashwat Dixit | Full-Stack Developer',
@@ -50,6 +51,7 @@ export default function RootLayout({
         </div>
         <Navbar />
         {children}
+        <Analytics />
       </body>
     </html>
   );

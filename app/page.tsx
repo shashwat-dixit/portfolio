@@ -1,6 +1,6 @@
 "use client"
-import ProjectShowcase from "@/components/ProjectShowcase";
 import SignIn from "@/components/sign-in";
+import { SignOut } from "@/components/sign-out";
 import { motion } from "framer-motion";
 
 
@@ -16,6 +16,7 @@ export default function Home() {
         Hi, I am Shashwat Dixit
       </motion.h1>
       <SignIn />
+      <SignOut />
     </div>
   );
 }
