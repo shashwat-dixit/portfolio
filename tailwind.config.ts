@@ -10,6 +10,8 @@ const config: Config = {
   theme: {
   	extend: {
   		colors: {
+			softPeach: '#F9F9F9',
+			softPurple: '#ECC5FB',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {

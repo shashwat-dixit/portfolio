@@ -18,7 +18,6 @@ export default function Navbar() {
         { href: "/", label: <Terminal /> },
         { href: "/work", label: "Work" },
         { href: "/blog", label: "Blog" },
-        { href: "/resume.pdf", label: "Resume" },
     ];
 
     return (
@@ -35,7 +34,7 @@ export default function Navbar() {
                 initial={{ scale: 0.95 }}
                 animate={{ scale: 1 }}
                 transition={{ duration: 0.3, delay: 0.2 }}
-                className="flex gap-x-6 px-0 py-1 text-xl border rounded-2xl"
+                className="flex gap-x-8 px-0 py-1 text-xl border-2 rounded-2xl"
             >
                 {navItems.map((item, index) => (
                     <motion.li
@@ -51,7 +50,7 @@ export default function Navbar() {
                         <Link
                             href={item.href}
                             className={cn(
-                                "px-3 py-1 mx-1 duration-500 ease-in-out transition-colors rounded-2xl block relative",
+                                "px-4 py-1 mx-1 duration-500 ease-in-out transition-colors rounded-xl block relative",
                                 pathname === item.href
                                     ? "bg-violet-400 text-white underline underline-offset-2"
                                     : "hover:bg-orange-100"
@@ -60,7 +59,7 @@ export default function Navbar() {
                             {pathname === item.href && (
                                 <motion.span
                                     layoutId="activeTab"
-                                    className="absolute inset-0 bg-violet-400 rounded-2xl -z-10"
+                                    className="bg-softPurple rounded-xl"
                                     transition={{ duration: 0.3 }}
                                 />
                             )}
