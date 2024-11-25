@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Image from 'next/image'
-import { Card, CardContent } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Github, ExternalLink } from 'lucide-react'
@@ -21,7 +21,7 @@ const projects: Project[] = [
         id: 1,
         title: "Jamin AI",
         description: "Jamin is an LLM aggregator.",
-        image: "https://github.com/shashwat-dixit/jamin/blob/master/img/jaminFrontPage.png",
+        image: "/api/placeholder/300/200",
         githubLink: "https://github.com/shashwat-dixit/jamin",
         deploymentLink: "https://jamin.shashwatdixit.dev",
         techStack: ["React", "TypeScript", "Langchain"]
@@ -30,7 +30,7 @@ const projects: Project[] = [
         id: 2,
         title: "Project 2",
         description: "Project 2 is a full-stack application built with Next.js and MongoDB.",
-        image: "/placeholder.svg?height=200&width=300",
+        image: "/api/placeholder/300/200",
         githubLink: "https://github.com/yourusername/project2",
         deploymentLink: "https://project2.example.com",
         techStack: ["Next.js", "MongoDB", "Express"]
@@ -47,6 +47,24 @@ const projects: Project[] = [
     {
         id: 4,
         title: "Project 4",
+        description: "A machine learning project that uses Python and TensorFlow for image recognition.",
+        image: "/placeholder.svg?height=200&width=300",
+        githubLink: "https://github.com/yourusername/project4",
+        deploymentLink: "https://project4.example.com",
+        techStack: ["Python", "TensorFlow", "Scikit-learn"]
+    },
+    {
+        id: 5,
+        title: "Project 5",
+        description: "A machine learning project that uses Python and TensorFlow for image recognition.",
+        image: "/placeholder.svg?height=200&width=300",
+        githubLink: "https://github.com/yourusername/project4",
+        deploymentLink: "https://project4.example.com",
+        techStack: ["Python", "TensorFlow", "Scikit-learn"]
+    },
+    {
+        id: 6,
+        title: "Project 6",
         description: "A machine learning project that uses Python and TensorFlow for image recognition.",
         image: "/placeholder.svg?height=200&width=300",
         githubLink: "https://github.com/yourusername/project4",
