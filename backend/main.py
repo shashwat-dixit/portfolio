@@ -1,5 +1,12 @@
-def main():
-    print("Hello from backend!")
+from fastapi import FastAPI
+from uvicorn import run
+
+app = FastAPI()
+
+
+@app.get("/")
+def root():
+    return {"message": "Hello, World!"}
 
 if __name__ == "__main__":
-    main()
+    run(app, host="0.0.0.0", port=8000)
