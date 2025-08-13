@@ -1,12 +1,9 @@
 from fastapi import FastAPI
-from uvicorn import run
+import api.blogs
 
-app = FastAPI()
-
+app = FastAPI(title="Portfolio Blog API")
+app.include_router(api.blogs.blogs, prefix="/api")
 
 @app.get("/")
-def root():
-    return {"message": "Hello, World!"}
-
-if __name__ == "__main__":
-    run(app, host="0.0.0.0", port=8000)
+async def root():
+    return {"message": "Welcome to Portfolio Blog API"}
