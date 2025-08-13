@@ -6,7 +6,6 @@ class Settings:
     DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/portfolio")
     GITHUB_TOKEN: str = os.getenv("GITHUB_TOKEN", "")
     GITHUB_WEBHOOK_SECRET: str = os.getenv("GITHUB_WEBHOOK_SECRET", "")
-    REPO_OWNER: str = os.getenv("REPO_OWNER", "")
     REPO_NAME: str = os.getenv("REPO_NAME", "")
     GITHUB_BRANCH: str = os.getenv("GITHUB_BRANCH", "main")
 

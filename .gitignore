@@ -45,8 +45,6 @@ build/
 dist/
 *.db
 venv/
-.env
-.env.*
 
 # ------------------------
 # Node / Next.js
@@ -60,4 +58,3 @@ out/
 # Common secrets & env files
 # ------------------------
 .env
-.env.*

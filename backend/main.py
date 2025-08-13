@@ -1,8 +1,8 @@
 from fastapi import FastAPI
-import api.blogs
+from backend.api.router.blogs import blogs
 
 app = FastAPI(title="Portfolio Blog API")
-app.include_router(api.blogs.blogs, prefix="/api")
+app.include_router(blogs, prefix="/api")
 
 @app.get("/")
 async def root():
