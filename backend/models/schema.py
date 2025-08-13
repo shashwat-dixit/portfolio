@@ -40,3 +40,8 @@ class BlogContent(SQLModel, table=True):
     content_html: str  # parsed HTML with CDN images
 
     blog: Optional[Blog] = Relationship(back_populates="content")
+
+
+class SubscriberEmail(SQLModel, table=True):
+    id: UUID
+    email: str
