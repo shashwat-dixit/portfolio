@@ -1,8 +1,12 @@
 from fastapi import FastAPI
-from backend.api.router.blogs import blogs
+from api.router.blogs import blogs
+from core.database import create_db_and_tables
+
 
 app = FastAPI(title="Portfolio Blog API")
 app.include_router(blogs, prefix="/api")
+
+create_db_and_tables()
 
 @app.get("/")
 async def root():

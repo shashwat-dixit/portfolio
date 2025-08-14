@@ -2,7 +2,6 @@ from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
 from sqlmodel import SQLModel, Field, Relationship
-from pydantic import JsonValue
 
 
 class BlogTagLink(SQLModel, table=True):
@@ -14,7 +13,9 @@ class Tag(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
 
-    blogs: List["Blog"] = Relationship(back_populates="tags", link_model=BlogTagLink)
+    blogs: List["Blog"] = Relationship(
+        back_populates="tags", link_model=BlogTagLink
+    )
 
 
 class Blog(SQLModel, table=True):
@@ -26,11 +27,13 @@ class Blog(SQLModel, table=True):
     slug: str
     description: str
     banner: str
-    seo: JsonValue
-    openGraph: JsonValue
-    twitter: JsonValue
+    seo: str
+    openGraph: str
+    twitter: str
 
-    tags: List[Tag] = Relationship(back_populates="blogs", link_model=BlogTagLink)
+    tags: List[Tag] = Relationship(
+        back_populates="blogs", link_model=BlogTagLink
+    )
     content: Optional["BlogContent"] = Relationship(back_populates="blog")
 
 
@@ -43,5 +46,5 @@ class BlogContent(SQLModel, table=True):
 
 
 class SubscriberEmail(SQLModel, table=True):
-    id: UUID
+    id: UUID = Field(primary_key=True)
     email: str

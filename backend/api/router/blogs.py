@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Path, Query
-from backend.models.models import BlogDetail, BlogListItem
+from models.models import BlogDetail, BlogListItem
 from typing import Annotated, List
 
 blogs = APIRouter(
