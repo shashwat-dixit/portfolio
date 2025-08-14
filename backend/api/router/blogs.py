@@ -26,4 +26,4 @@ async def get_blogs(
 @blogs.get("/{slug}", response_model=BlogDetail)
 async def get_blog(slug: Annotated[str, 
                    Path(title="The slug of the blog to get")]):
-    pass
+    
