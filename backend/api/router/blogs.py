@@ -16,14 +16,10 @@ async def get_blogs(
     Fetch blogs.
     - If `tags` is provided, filter by tags (comma-separated).
     """
-    if tags:
-        # filter by tags
-        pass
-    else:
-        # return all blogs
-        pass
+    pass
 
 @blogs.get("/{slug}", response_model=BlogDetail)
 async def get_blog(slug: Annotated[str, 
                    Path(title="The slug of the blog to get")]):
     
+    pass
