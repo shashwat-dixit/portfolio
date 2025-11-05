@@ -1,23 +1,37 @@
-# ------------------------
-# OS / Editor cruft
-# ------------------------
-# macOS
+node_modules
 .DS_Store
-.AppleDouble
-.LSOverride
+dist
+dist-ssr
+*.local
+count.txt
+.env
+.nitro
+.tanstack
+.wrangler
+.output
+.vinxi
+todos.json
 
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
 
-# Editors / IDEs
-.vscode/
-.idea/
-*.sublime-project
-*.sublime-workspace
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
-# Logs
+/coverage
+
+/build
+
+*.pem
+.vercel
+
+*.tsbuildinfo
+next-env.d.ts
 logs
 *.log
 npm-debug.log*
@@ -25,10 +39,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
-# ------------------------
-# Python / FastAPI
-# ------------------------
 __pycache__/
 *.py[cod]
 *.pyo
@@ -45,16 +55,8 @@ build/
 dist/
 *.db
 venv/
-
-# ------------------------
-# Node / Next.js
-# ------------------------
 node_modules/
 .next/
 out/
 *.tsbuildinfo
-
-# ------------------------
-# Common secrets & env files
-# ------------------------
 .env
