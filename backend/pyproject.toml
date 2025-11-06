@@ -1,7 +1,7 @@
 [project]
 name = "backend"
 version = "0.1.0"
-description = "Add your description here"
+description = "Backend for portfolio app"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -12,4 +12,6 @@ dependencies = [
     "python-dotenv>=1.1.1",
     "sqlmodel>=0.0.24",
     "pyyaml>=6.0.2",
+    "asyncpg>=0.30.0",
+    "redis>=7.0.1",
 ]
