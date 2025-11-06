@@ -1,3 +1,7 @@
+# Parses Blog Metadata & Markdown Content
+
+# TODO: Consider parsing the blog content further to optimize images. 
+
 from typing import Any, Dict, Tuple
 import yaml
 

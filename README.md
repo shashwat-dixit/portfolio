@@ -12,5 +12,3 @@ portfolio/
 ├── frontend/                         # Deploy/backup utilities
 └── README.md
 ```
-
----
