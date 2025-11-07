@@ -1,7 +1,5 @@
 # Parses Blog Metadata & Markdown Content
 
-# TODO: Consider parsing the blog content further to optimize images. 
-
 from typing import Any, Dict, Tuple
 import yaml
 
@@ -48,3 +46,6 @@ def parse_blog(file_path: str) -> Tuple[Dict[str, Any], str]:
         metadata = {}
 
     return metadata, body
+
+def parse_content(content: str):
+    pass
