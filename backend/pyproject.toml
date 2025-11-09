@@ -16,4 +16,5 @@ dependencies = [
     "redis>=7.0.1",
     "hypercorn>=0.17.3",
     "uvloop>=0.22.1",
+    "alembic>=1.17.1",
 ]
