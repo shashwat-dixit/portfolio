@@ -1,9 +1,12 @@
 # Parses Blog Metadata & Markdown Content
 
+# TODO: (Low Priority) Add a parse_content function to get more fine 
+# grained control over the content and images. 
+
 from typing import Any, Dict, Tuple
 import yaml
 
-def parse_blog(file_path: str) -> Tuple[Dict[str, Any], str]:
+def parse_blog_md(file_name: str) -> Tuple[Dict[str, Any], str]:
     """
     Parse YAML front matter bounded by the first pair of lines that are 
     exactly '---' at the very start of the file. All subsequent '---' stay in 
@@ -11,7 +14,7 @@ def parse_blog(file_path: str) -> Tuple[Dict[str, Any], str]:
 
     Returns (metadata, body).
     """
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_name, "r", encoding="utf-8") as f:
         content = f.read()
 
     # Split into lines but keep line endings so we preserve the body unchanged
