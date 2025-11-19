@@ -1,13 +1,11 @@
-# ruff: noqa: F401
-from sqlmodel import create_engine, Session, SQLModel
-from models.schema import BlogTagLink, Blog, BlogContent, Tag, SubscriberEmail
+from sqlalchemy.ext.asyncio import create_async_engine
 import os
 
 # Database URL from environment variables
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres@localhost:5450/blog")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://postgres@localhost:5450/blog")
 
 # Create engine with connection pooling configuration
-engine = create_engine(
+engine = create_async_engine(
     DATABASE_URL, 
     echo=True,
     pool_size=10,

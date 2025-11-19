@@ -1,37 +1,63 @@
 from datetime import date
-from uuid import UUID, uuid4
+from uuid import uuid4, UUID
 from typing import Any
-from sqlmodel import SQLModel, Field, Column, Relationship
-from sqlalchemy.dialects.postgresql import JSONB
+
+from sqlalchemy import (
+    Column, String, ForeignKey, Table
+)
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
-class BlogPostTagLink(SQLModel, table=True):
-    post_id: UUID = Field(foreign_key="blog.id", primary_key=True)
-    tag_id: UUID = Field(foreign_key="tag.id", primary_key=True)
+class Base(DeclarativeBase):
+    pass
 
 
-class Tag(SQLModel, table=True):
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
-    name: str = Field(unique=True, index=True)
+# Association table (many-to-many)
+blog_post_tag_link = Table(
+    "blogposttaglink",
+    Base.metadata,
+    Column("post_id", PG_UUID(as_uuid=True), ForeignKey("blog.id"), primary_key=True),
+    Column("tag_id", PG_UUID(as_uuid=True), ForeignKey("tag.id"), primary_key=True),
+)
 
-    posts: list["Blog"] = Relationship(back_populates="tags", link_model=BlogPostTagLink)
+
+class Tag(Base):
+    __tablename__ = "tag"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, default=uuid4
+    )
+    name: Mapped[str] = mapped_column(String, unique=True, index=True)
+
+    posts: Mapped[list["Blog"]] = relationship(
+        secondary=blog_post_tag_link,
+        back_populates="tags"
+    )
 
 
-class Blog(SQLModel, table=True):
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
-    title: str
-    slug: str = Field(index=True, unique=True)
-    description: str
-    author: str = Field(default="Shashwat Dixit")
-    published_date: date | None = Field(default=None)
-    last_modified_date: date | None = Field(default=None)
-    image: str | None = None
-    seo: dict[str, Any] | None = Field(default=None, sa_column=Column(JSONB))
-    openGraph: dict[str, Any] | None = Field(default=None, sa_column=Column(JSONB))
-    twitter: dict[str, Any] | None = Field(default=None, sa_column=Column(JSONB))
-    content: str
-    tags: list[Tag] = Relationship(back_populates="posts", link_model=BlogPostTagLink)
-    file_hash: str = Field(nullable=False, index=True)
-    # Not doing this now, if needed will add it if perf is not satisfactory.
-    # Stores Pre-rendered HTML
-    # content_html: str | None = None
+class Blog(Base):
+    __tablename__ = "blog"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, default=uuid4
+    )
+    title: Mapped[str] = mapped_column(String)
+    slug: Mapped[str] = mapped_column(String, index=True, unique=True)
+    description: Mapped[str] = mapped_column(String)
+    author: Mapped[str] = mapped_column(String, default="Shashwat Dixit")
+    published_date: Mapped[date | None]
+    last_modified_date: Mapped[date | None]
+    image: Mapped[str | None]
+
+    seo: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    openGraph: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    twitter: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+
+    content: Mapped[str] = mapped_column(String)
+    file_hash: Mapped[str] = mapped_column(String, index=True)
+
+    tags: Mapped[list[Tag]] = relationship(
+        secondary=blog_post_tag_link,
+        back_populates="posts"
+    )
