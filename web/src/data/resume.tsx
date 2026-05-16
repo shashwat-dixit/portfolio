@@ -1,0 +1,246 @@
+import { Icons } from "@/components/icons";
+import { House, Library } from "lucide-react";
+import { ReactLight } from "@/components/ui/svgs/reactLight";
+import { NextjsIconDark } from "@/components/ui/svgs/nextjsIconDark";
+import { Typescript } from "@/components/ui/svgs/typescript";
+import { Nodejs } from "@/components/ui/svgs/nodejs";
+import { Python } from "@/components/ui/svgs/python";
+import { Golang } from "@/components/ui/svgs/golang";
+import { Postgresql } from "@/components/ui/svgs/postgresql";
+import { Docker } from "@/components/ui/svgs/docker";
+import { Kubernetes } from "@/components/ui/svgs/kubernetes";
+
+export const DATA = {
+  name: "Shashwat Dixit",
+  initials: "SD",
+  url: "https://shashwat.dev",
+  location: "Bengaluru, India",
+  locationLink: "https://www.google.com/maps/place/bengaluru",
+  description:
+    "Software Engineer building performant backends and full-stack applications. I care about systems that scale and developer experience that doesn't suck.",
+  summary:
+    "I'm a software engineer at [Instahyre](/#work) where I work on distributed systems, search infrastructure, and backend performance. Before that I built event-driven pipelines and SSR frontends as a [full-stack contractor](/#work). I hold a degree in [Electrical & Electronics Engineering from NMIT Bengaluru](/#education), have authored [IEEE research papers on Quantum Computing](/#achievements), and won a [machine learning hackathon](/#achievements). I like working across the stack — from Redis locking to Elasticsearch query parsers to Next.js SPAs.",
+  avatarUrl: "/picofme.png",
+  ogImage: "/og_image.png",
+  sections: {
+    about: { order: 1, enabled: true, heading: "About" },
+    work: { order: 2, enabled: true, heading: "Work Experience", presentLabel: "Present" },
+    education: { order: 3, enabled: true, heading: "Education" },
+    skills: { order: 4, enabled: true, heading: "Skills" },
+    projects: {
+      order: 5, enabled: true,
+      label: "My Projects",
+      heading: "Check out my latest work",
+      text: "I've built tools ranging from AI chat platforms to real-time collaborative whiteboards. Here are a couple of my favorites.",
+    },
+    hackathons: {
+      order: 7, enabled: true,
+      label: "Achievements",
+      heading: "Achievements & Recognition",
+      text: "Research papers, hackathon wins, and academic recognition from my time in university and beyond.",
+    },
+    photos: {
+      order: 6, enabled: false,
+      heading: "My Recent Travels",
+    },
+    contact: {
+      order: 8, enabled: true,
+      label: "Contact",
+      heading: "Get in Touch",
+      text: "Want to chat? Drop me an email or reach out on LinkedIn — I'm always happy to connect.",
+    },
+  },
+  photos: [
+    { src: "/photos/photo1.jpg", alt: "Photo 1" },
+    { src: "/photos/photo2.jpg", alt: "Photo 2" },
+    { src: "/photos/photo3.jpg", alt: "Photo 3" },
+  ],
+  skills: [
+    { name: "React", icon: ReactLight },
+    { name: "Next.js", icon: NextjsIconDark },
+    { name: "TypeScript", icon: Typescript },
+    { name: "Node.js", icon: Nodejs },
+    { name: "Python", icon: Python },
+    { name: "Go", icon: Golang },
+    { name: "PostgreSQL", icon: Postgresql },
+    { name: "Docker", icon: Docker },
+    { name: "Kubernetes", icon: Kubernetes },
+  ],
+  navbar: [
+    { href: "/", icon: House, label: "Home" },
+    { href: "/blog", icon: Library, label: "Blog" },
+  ],
+  contact: {
+    email: "shashwatmain@gmail.com",
+    tel: "+91-8957058063",
+    social: {
+      GitHub: {
+        name: "GitHub",
+        url: "https://github.com/shashwat",
+        icon: Icons.github,
+        navbar: true,
+      },
+      LinkedIn: {
+        name: "LinkedIn",
+        url: "https://linkedin.com/in/shashwat",
+        icon: Icons.linkedin,
+        navbar: true,
+      },
+      X: {
+        name: "X",
+        url: "https://x.com",
+        icon: Icons.x,
+        navbar: false,
+      },
+      email: {
+        name: "Send Email",
+        url: "mailto:shashwatmain@gmail.com",
+        icon: Icons.email,
+        navbar: false,
+      },
+    },
+  },
+
+  work: [
+    {
+      company: "Instahyre",
+      href: "https://instahyre.com",
+      badges: [],
+      location: "Bengaluru, India",
+      title: "SDE-1",
+      logoUrl: "https://www.google.com/s2/favicons?domain=instahyre.com&sz=128",
+      start: "December 2024",
+      end: undefined,
+      description:
+        "Designed Redis-based distributed locking (SETNX + TTL) to eliminate double-booking under concurrent traffic. Reduced API latency by 80% (p75: 600ms → 120ms) by profiling slow PostgreSQL queries and optimizing payloads. Built a stack-based boolean query parser (AND/OR/NOT) for Elasticsearch, improving matching relevance by 20%. Reduced regression bugs by 30% by decomposing a monolith into independently maintainable modules.",
+    },
+    {
+      company: "Pummyz Foods",
+      href: "https://pummyz.com",
+      badges: ["Contract"],
+      location: "Remote",
+      title: "Full-Stack Developer",
+      logoUrl: "https://avatar.vercel.sh/pummyz-foods?size=40",
+      start: "May 2024",
+      end: "August 2024",
+      description:
+        "Designed an event-driven pipeline using Kafka for asynchronous order processing across thousands of daily events. Implemented idempotent webhook-based payment confirmation, reducing duplicate order processing by 95%. Reduced media load times by 30% via AWS S3 + CDN caching. Improved Core Web Vitals by 35% with a Next.js SSR architecture optimized for first-contentful paint and reduced JS bundle size.",
+    },
+  ],
+  education: [
+    {
+      school: "Nitte Meenakshi Institute of Technology, Bengaluru",
+      href: "https://nmit.ac.in",
+      degree: "Bachelor of Engineering in Electrical & Electronics Engineering",
+      logoUrl: "https://www.google.com/s2/favicons?domain=nmit.ac.in&sz=128",
+      start: "2020",
+      end: "2024",
+    },
+  ],
+  projects: [
+    {
+      title: "Jamin",
+      href: "",
+      dates: "2024",
+      active: true,
+      description:
+        "Full-stack AI chat platform integrating multiple LLMs (GPT, Claude, Cohere) via LangChain. Features RAG-powered PDF Q&A and YouTube summarization, plus Stable Diffusion image generation. Scalable PostgreSQL/Drizzle backend enabling context-aware conversations across models.",
+      technologies: [
+        "React",
+        "Node.js",
+        "LangChain",
+        "PostgreSQL",
+        "Drizzle",
+        "OpenAI",
+        "Stable Diffusion",
+      ],
+      links: [
+        {
+          type: "Source",
+          href: "",
+          icon: <Icons.github className="size-3" />,
+        },
+      ],
+      image: "",
+      video: "",
+    },
+    {
+      title: "Zort",
+      href: "",
+      dates: "2024",
+      active: true,
+      description:
+        "Real-time collaborative whiteboard supporting 100+ concurrent users, built with Next.js and Socket.IO. Client-side state management via Zustand and localStorage to reduce server load. CI/CD pipeline with Docker and GitHub Actions for zero-failure automated deployments.",
+      technologies: [
+        "Next.js",
+        "Socket.IO",
+        "Zustand",
+        "Docker",
+        "GitHub Actions",
+      ],
+      links: [
+        {
+          type: "Source",
+          href: "",
+          icon: <Icons.github className="size-3" />,
+        },
+      ],
+      image: "",
+      video: "",
+    },
+  ],
+  hackathons: [
+    {
+      title: "IEEE Research Papers",
+      dates: "2023 – 2024",
+      location: "NMIT, Bengaluru",
+      description: "Authored two research papers on Quantum Computing using Qiskit, published at IEEE conferences.",
+      image: "https://avatar.vercel.sh/ieee-research?size=40",
+      win: "Published Author",
+      links: [],
+    },
+    {
+      title: "Best Innovation Award — Major Project 2024",
+      dates: "2024",
+      location: "NMIT, Bengaluru",
+      description: "Ranked first among 75 students across 24 teams for the best major project of the year.",
+      image: "https://avatar.vercel.sh/innovation-award?size=40",
+      win: "1st Place",
+      links: [],
+    },
+    {
+      title: "HoD's Honor Roll — Top 3 All-Rounders",
+      dates: "2023",
+      location: "NMIT, Bengaluru",
+      description: "Named among the top 3 all-rounders out of 200 students by the Head of Department.",
+      image: "https://avatar.vercel.sh/honor-roll?size=40",
+      win: "Top 3",
+      links: [],
+    },
+    {
+      title: "Mini Hackathon NMIT'22 — ML Track",
+      dates: "2022",
+      location: "NMIT, Bengaluru",
+      description: "Won the Machine Learning track at the college-wide Mini Hackathon.",
+      image: "https://avatar.vercel.sh/ml-hackathon?size=40",
+      win: "Winner, ML Track",
+      links: [],
+    },
+    {
+      title: "NPTEL — Joy of Computing",
+      dates: "2023",
+      location: "Online",
+      description: "Ranked in the top 5% of participants in NPTEL's 'Joy of Computing' course.",
+      image: "https://avatar.vercel.sh/nptel-joy?size=40",
+      links: [],
+    },
+    {
+      title: "NASA Space Apps Challenge 2023",
+      dates: "2023",
+      location: "Bengaluru",
+      description: "Served as Marketing Head, securing 5 partnerships to expand event resources and reach.",
+      image: "https://avatar.vercel.sh/nasa-space-apps?size=40",
+      links: [],
+    },
+  ],
+} as const;
