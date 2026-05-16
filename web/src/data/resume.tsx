@@ -1,25 +1,40 @@
 import { Icons } from "@/components/icons";
-import { House, Library } from "lucide-react";
-import { ReactLight } from "@/components/ui/svgs/reactLight";
-import { NextjsIconDark } from "@/components/ui/svgs/nextjsIconDark";
-import { Typescript } from "@/components/ui/svgs/typescript";
-import { Nodejs } from "@/components/ui/svgs/nodejs";
-import { Python } from "@/components/ui/svgs/python";
-import { Golang } from "@/components/ui/svgs/golang";
-import { Postgresql } from "@/components/ui/svgs/postgresql";
-import { Docker } from "@/components/ui/svgs/docker";
-import { Kubernetes } from "@/components/ui/svgs/kubernetes";
+import { House, Library, Database } from "lucide-react";
+import {
+  SiPython,
+  SiCplusplus,
+  SiGo,
+  SiJavascript,
+  SiTypescript,
+  SiGit,
+  SiGooglecloud,
+  SiDocker,
+  SiKubernetes,
+  SiReact,
+  SiNextdotjs,
+  SiNodedotjs,
+  SiBun,
+  SiElasticsearch,
+  SiDjango,
+  SiRabbitmq,
+  SiApachekafka,
+  SiPostgresql,
+  SiRedis,
+  SiApachecassandra,
+  SiMysql,
+} from "react-icons/si";
+import { FaAws } from "react-icons/fa6";
 
 export const DATA = {
   name: "Shashwat Dixit",
   initials: "SD",
-  url: "https://shashwat.dev",
+  url: "https://shashwatdixit.com",
   location: "Bengaluru, India",
   locationLink: "https://www.google.com/maps/place/bengaluru",
   description:
     "Software Engineer building performant backends and full-stack applications. I care about systems that scale and developer experience that doesn't suck.",
   summary:
-    "I'm a software engineer at [Instahyre](/#work) where I work on distributed systems, search infrastructure, and backend performance. Before that I built event-driven pipelines and SSR frontends as a [full-stack contractor](/#work). I hold a degree in [Electrical & Electronics Engineering from NMIT Bengaluru](/#education), have authored [IEEE research papers on Quantum Computing](/#achievements), and won a [machine learning hackathon](/#achievements). I like working across the stack — from Redis locking to Elasticsearch query parsers to Next.js SPAs.",
+    "I'm a software engineer at [Instahyre](https://instahyre.com) where I work on distributed systems, search infrastructure, and backend performance. Before that I built event-driven pipelines and SSR frontends as a [full-stack contractor](/#work). I hold a degree in [Electrical & Electronics Engineering from NMIT Bengaluru](https://nmit.ac.in), have authored [IEEE research papers on Quantum Computing](https://scholar.google.com/citations?user=q3MbjLQAAAAJ&hl=en), and won a [machine learning hackathon](/#achievements). I like working across the stack — from Redis locking to Elasticsearch query parsers to Next.js SPAs.",
   avatarUrl: "/picofme.png",
   ogImage: "/og_image.png",
   sections: {
@@ -56,15 +71,29 @@ export const DATA = {
     { src: "/photos/photo3.jpg", alt: "Photo 3" },
   ],
   skills: [
-    { name: "React", icon: ReactLight },
-    { name: "Next.js", icon: NextjsIconDark },
-    { name: "TypeScript", icon: Typescript },
-    { name: "Node.js", icon: Nodejs },
-    { name: "Python", icon: Python },
-    { name: "Go", icon: Golang },
-    { name: "PostgreSQL", icon: Postgresql },
-    { name: "Docker", icon: Docker },
-    { name: "Kubernetes", icon: Kubernetes },
+    { name: "Python", icon: SiPython },
+    { name: "C++", icon: SiCplusplus },
+    { name: "Go", icon: SiGo },
+    { name: "JavaScript", icon: SiJavascript },
+    { name: "TypeScript", icon: SiTypescript },
+    { name: "Git", icon: SiGit },
+    { name: "GCP", icon: SiGooglecloud },
+    { name: "AWS", icon: FaAws },
+    { name: "Docker", icon: SiDocker },
+    { name: "Kubernetes", icon: SiKubernetes },
+    { name: "React", icon: SiReact },
+    { name: "Next.js", icon: SiNextdotjs },
+    { name: "Node.js", icon: SiNodedotjs },
+    { name: "Bun.js", icon: SiBun },
+    { name: "Elasticsearch", icon: SiElasticsearch },
+    { name: "Django", icon: SiDjango },
+    { name: "RabbitMQ", icon: SiRabbitmq },
+    { name: "Kafka", icon: SiApachekafka },
+    { name: "PostgreSQL", icon: SiPostgresql },
+    { name: "Redis", icon: SiRedis },
+    { name: "Cassandra", icon: SiApachecassandra },
+    { name: "MySQL", icon: SiMysql },
+    { name: "SQL", icon: Database },
   ],
   navbar: [
     { href: "/", icon: House, label: "Home" },
@@ -76,13 +105,13 @@ export const DATA = {
     social: {
       GitHub: {
         name: "GitHub",
-        url: "https://github.com/shashwat",
+        url: "https://github.com/shashwatt-codes",
         icon: Icons.github,
         navbar: true,
       },
       LinkedIn: {
         name: "LinkedIn",
-        url: "https://linkedin.com/in/shashwat",
+        url: "https://linkedin.com/in/dixitshashwat",
         icon: Icons.linkedin,
         navbar: true,
       },
