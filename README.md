@@ -1,110 +1,307 @@
 # Portfolio — Shashwat Dixit
 
-Personal portfolio and blog, built with Astro 6, React 19, Tailwind CSS 4, and shadcn/ui.
+Personal portfolio and blog. Go backend syncs markdown from GitLab, stores in PostgreSQL with Redis caching, serves via REST API. Astro frontend renders the portfolio and blog at `shashwatdixit.com`.
+
+## System Architecture
+
+```
+┌──────────────┐    weekly sync    ┌──────────────────────────────────────┐
+│  GitLab Repo │ ───────────────── │           Go Backend (:8080)         │
+│  (markdown)  │   git pull        │                                      │
+└──────────────┘                   │  ┌────────┐  ┌───────────────────┐   │
+                                   │  │ Sync   │  │ REST API          │   │
+                                   │  │Service │  │ /api/posts        │   │
+                                   │  └───┬────┘  │ /api/posts/:slug  │   │
+                                   │      │       │ /api/tags         │   │
+                                   │      ▼       │ /api/sync         │   │
+                                   │  ┌────────┐  │ /api/feed.xml     │   │
+                                   │  │  PG    │  │ /api/health       │   │
+                                   │  │  DB    │◄─┤                   │   │
+                                   │  └────────┘  └────────┬──────────┘   │
+                                   │                       │              │
+                                   │  ┌────────┐           │              │
+                                   │  │ Redis  │◄──────────┘              │
+                                   │  │ Cache  │  cache-aside             │
+                                   │  └────────┘                          │
+                                   └──────────────┬───────────────────────┘
+                                                  │ JSON
+                                                  ▼
+                                   ┌──────────────────────────────────────┐
+                                   │      Astro Frontend (:4321)          │
+                                   │                                      │
+                                   │  shashwatdixit.com      → portfolio  │
+                                   │  shashwatdixit.com/blog → blog list  │
+                                   │  shashwatdixit.com/blog/:slug → post │
+                                   │                                      │
+                                   │  Fuse.js client-side search          │
+                                   │  localStorage reading progress       │
+                                   └──────────────────────────────────────┘
+```
 
 ## Tech Stack
 
 | Layer | Choice |
 | --- | --- |
-| Framework | [Astro v6](https://astro.build) — static site generator |
-| UI / Interactivity | [React 19](https://react.dev) via Astro islands (`client:load`, `client:only`) |
-| Content | [MDX](https://mdxjs.com/) with content collections, remark-gfm, rehype-pretty-code + Shiki |
-| Styling | [Tailwind CSS v4](https://tailwindcss.com), shadcn/ui primitives (Radix), CVA, tailwind-merge |
-| Fonts | Fontsource variable — Outfit (sans), Geist Mono (mono) |
-| Animation | [Motion](https://motion.dev/) (Framer Motion successor) |
-| Theming | next-themes (light/dark, system detection) |
-| Icons | lucide-react, @radix-ui/react-icons, custom SVGs |
-| Package Manager | pnpm |
-| Node | >= 22.12.0 |
-| Deployment | TBD — no adapter configured; currently builds to static |
+| **Backend** | Go 1.26, chi router, pgx/v5, go-redis/v9, goldmark |
+| **Database** | PostgreSQL (posts, tags) |
+| **Cache** | Redis (response cache, 7-day TTL, flush on sync) |
+| **Frontend** | Astro v6 (hybrid SSR), React 19 islands |
+| **Styling** | Tailwind CSS v4, shadcn/ui, CVA |
+| **Search** | Fuse.js (client-side fuzzy search) |
+| **Content** | Markdown in GitLab repo, parsed by backend |
+| **Fonts** | Fontsource variable — Outfit (sans), Geist Mono (mono) |
+| **Animation** | Motion (Framer Motion successor) |
+| **Theming** | next-themes (light/dark, system detection) |
 
-## Architecture
-
-### Data-Driven Design
-
-The entire portfolio is driven by two data files. Components never contain hardcoded personal data — they read from the exported objects:
+## Directory Structure
 
 ```
-src/data/
-├── resume.tsx   ← identity, work, education, projects, skills, achievements, contact
-└── config.ts    ← site URL, SEO, theme colors, typography, blog settings
+portfolio/
+├── README.md
+├── docker-compose.yml
+│
+├── backend/                          # Go backend
+│   ├── cmd/
+│   │   └── server/
+│   │       └── main.go              # entrypoint
+│   ├── internal/
+│   │   ├── config/
+│   │   │   └── config.go            # env-based configuration
+│   │   ├── handler/
+│   │   │   ├── posts.go             # GET /api/posts, GET /api/posts/:slug
+│   │   │   ├── tags.go              # GET /api/tags
+│   │   │   ├── sync.go              # POST /api/sync
+│   │   │   └── feed.go              # GET /api/feed.xml
+│   │   ├── middleware/
+│   │   │   ├── cache.go             # Redis response caching
+│   │   │   └── cors.go              # CORS for frontend
+│   │   ├── model/
+│   │   │   └── post.go              # Post, Tag structs
+│   │   ├── repository/
+│   │   │   ├── post_repo.go         # PostgreSQL post queries
+│   │   │   └── tag_repo.go          # PostgreSQL tag queries
+│   │   ├── service/
+│   │   │   ├── sync_service.go      # GitLab clone/pull, parse, upsert
+│   │   │   ├── post_service.go      # Post retrieval logic
+│   │   │   └── markdown.go          # frontmatter parsing + md→HTML
+│   │   └── cache/
+│   │       └── redis.go             # Redis client, key patterns, invalidation
+│   ├── migrations/
+│   │   └── 001_initial.sql          # DDL for posts, tags, post_tags
+│   ├── Dockerfile
+│   ├── go.mod
+│   └── go.sum
+│
+└── web/                              # Astro frontend
+    ├── astro.config.mjs
+    ├── package.json
+    ├── tsconfig.json
+    ├── public/                       # Static assets
+    └── src/
+        ├── data/
+        │   ├── resume.tsx            # Portfolio data (identity, work, projects, etc.)
+        │   └── config.ts             # Site settings, SEO, theme, API base URL
+        ├── components/
+        │   ├── HomePage.tsx          # Portfolio homepage sections
+        │   ├── BlogList.tsx          # Blog listing with search + tag filter
+        │   ├── BlogSearch.tsx        # Fuse.js search input (TODO)
+        │   ├── ReadingProgress.tsx   # Progress bar + scroll restore (TODO)
+        │   ├── TagList.tsx           # Tag chips with filter links (TODO)
+        │   ├── section/              # Homepage sections
+        │   ├── magicui/              # Animated UI components
+        │   └── ui/                   # shadcn/ui primitives
+        ├── hooks/
+        │   └── useReadingProgress.ts # localStorage reading position (TODO)
+        ├── lib/
+        │   ├── api.ts               # Typed fetch wrapper for Go backend (TODO)
+        │   ├── utils.ts
+        │   └── pagination.ts
+        ├── layouts/
+        │   └── Layout.astro
+        ├── pages/
+        │   ├── index.astro           # Portfolio homepage
+        │   ├── 404.astro
+        │   └── blog/
+        │       ├── index.astro       # Blog listing (fetches from API)
+        │       ├── [slug].astro      # Blog post (fetches from API)
+        │       └── tag/
+        │           └── [tag].astro   # Tag-filtered listing (TODO)
+        └── styles/
+            └── global.css
 ```
 
-`resume.tsx` exports a single `DATA` object consumed by every page and section component.
-`config.ts` exports a single `CONFIG` object consumed by the layout, Astro config, and SEO tags.
+## Blog Frontmatter Schema
 
-### Directory Structure
+Markdown files in the GitLab repo use this YAML frontmatter:
 
-```
-web/
-├── astro.config.mjs          # Astro config (site URL, integrations, markdown pipeline)
-├── components.json            # shadcn/ui component registry config
-├── package.json
-├── tsconfig.json
-├── public/                    # Static assets (avatar, OG image, photos, project screenshots)
-│   └── favicon.svg
-└── src/
-    ├── content.config.ts      # Content collection schema (blog posts)
-    ├── middleware.ts           # Security headers (active only in server mode)
-    ├── content/
-    │   └── blog/              # MDX blog posts
-    │       ├── building-restful-apis.mdx
-    │       └── ...
-    ├── data/
-    │   ├── config.ts          # Site settings, SEO, theme
-    │   └── resume.tsx         # All personal/portfolio data
-    ├── components/
-    │   ├── HomePage.tsx        # Main page — renders all sections from DATA
-    │   ├── NavbarIsland.tsx    # Navigation island (React)
-    │   ├── navbar.tsx          # Navbar layout
-    │   ├── icons.tsx           # Icon registry (GitHub, LinkedIn, etc.)
-    │   ├── project-card.tsx    # Project card component
-    │   ├── timeline.tsx        # Work/education/hackathon timeline
-    │   ├── mode-toggle.tsx     # Light/dark theme toggle
-    │   ├── theme-provider.tsx  # next-themes provider wrapper
-    │   ├── section/            # Page sections (contact, work, projects, hackathons, photos)
-    │   ├── magicui/            # Animated UI primitives (blur-fade, dock, flickering-grid)
-    │   ├── mdx/                # MDX rendering components (code blocks, media)
-    │   └── ui/                 # shadcn/ui primitives + custom SVG icons
-    ├── layouts/
-    │   └── Layout.astro        # HTML shell — meta tags, OG, theme injection
-    ├── lib/
-    │   ├── utils.ts            # cn() helper (clsx + tailwind-merge)
-    │   ├── pagination.ts       # Blog pagination logic
-    │   └── remark-code-meta.ts # Custom remark plugin for code block metadata
-    ├── pages/
-    │   ├── index.astro         # Homepage — renders <HomePage /> island
-    │   ├── 404.astro
-    │   └── blog/
-    │       ├── index.astro     # Blog listing page
-    │       └── [slug].astro    # Individual blog post (content collection)
-    └── styles/
-        └── global.css          # Font imports, Tailwind base, theme CSS variables
+```yaml
+---
+title: "What I am learning in 2026"
+slug: what-i-am-learning-2026
+date: 2025-01-25
+updated: 2025-02-01            # optional
+tags: [code, engineering, personal]
+description: "Short summary for listings and SEO"
+cover: /images/learning-2026.jpg  # optional
+status: published              # published | draft | writing
+---
 ```
 
-### Page Rendering Flow
+The backend auto-generates OG/Twitter/SEO metadata from these fields. `status: writing` posts are ignored during sync. `draft` posts are stored but not served publicly.
+
+## Database Schema
+
+```sql
+CREATE TABLE posts (
+    id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    slug         TEXT UNIQUE NOT NULL,
+    title        TEXT NOT NULL,
+    description  TEXT,
+    content_md   TEXT NOT NULL,
+    content_html TEXT NOT NULL,
+    cover_image  TEXT,
+    status       TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('published', 'draft')),
+    reading_time INT  NOT NULL DEFAULT 0,
+    author       TEXT NOT NULL DEFAULT 'Shashwat Dixit',
+    published_at TIMESTAMPTZ,
+    updated_at   TIMESTAMPTZ,
+    gitlab_sha   TEXT,
+    created_at   TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE tags (
+    id   SERIAL PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL,
+    slug TEXT UNIQUE NOT NULL
+);
+
+CREATE TABLE post_tags (
+    post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
+    tag_id  INT  REFERENCES tags(id)  ON DELETE CASCADE,
+    PRIMARY KEY (post_id, tag_id)
+);
+
+CREATE INDEX idx_posts_status       ON posts(status);
+CREATE INDEX idx_posts_published_at ON posts(published_at DESC);
+CREATE INDEX idx_posts_slug         ON posts(slug);
+CREATE INDEX idx_tags_slug          ON tags(slug);
+```
+
+## REST API
 
 ```
-index.astro
-  └─ Layout.astro              # Reads CONFIG + DATA for meta/OG tags
-       └─ <HomePage />          # React island (client:only="react")
-            ├─ About section     # DATA.summary rendered via react-markdown
-            ├─ Work section      # DATA.work[] → Timeline component
-            ├─ Education section # DATA.education[] → Timeline component
-            ├─ Skills section    # DATA.skills[] → icon grid
-            ├─ Projects section  # DATA.projects[] → ProjectCard grid
-            ├─ Photos section    # DATA.photos[] → image gallery (disabled)
-            ├─ Achievements      # DATA.hackathons[] → Timeline component
-            └─ Contact section   # DATA.contact → social links + dock
+GET  /api/posts                   List published posts
+     ?tag=engineering             Filter by tag
+     ?page=1&limit=10            Pagination
+     ?q=search+term              Search (title + description)
+     Response: { posts: [...], pagination: { page, limit, total, totalPages } }
+
+GET  /api/posts/:slug             Single post with full HTML
+     Response: { slug, title, description, contentHtml, tags, date, updated, cover, readingTime }
+
+GET  /api/tags                    All tags with post counts
+     Response: { tags: [{ name, slug, count }] }
+
+POST /api/sync                    Trigger GitLab sync (protected)
+     Header: X-API-Key: <secret>
+     Response: { synced, created, updated, deleted }
+
+GET  /api/feed.xml                RSS 2.0 feed
+
+GET  /api/health                  Health check
 ```
 
-### Blog Pipeline
+## Redis Caching
 
-Blog posts are `.mdx` files in `src/content/blog/`. The content collection schema (`content.config.ts`) validates frontmatter with Zod. Posts are rendered by `[slug].astro` which generates JSON-LD structured data using `DATA.name` and `CONFIG.site.url`.
+| Key Pattern | Content | TTL |
+| --- | --- | --- |
+| `blog:post:{slug}` | Single post JSON | 7 days |
+| `blog:posts:list:{tag}:{page}:{limit}` | Post list JSON | 7 days |
+| `blog:tags:all` | Tags list JSON | 7 days |
 
-Markdown is processed through: remark-gfm → remark-code-meta → rehype-pretty-code (Shiki, dual GitHub themes).
+On `POST /api/sync`, all `blog:*` keys are flushed. Cache-aside pattern: handler checks Redis first, falls back to PG, writes to Redis on miss.
+
+HTTP response headers for CDN caching:
+- Single post: `Cache-Control: public, max-age=86400, stale-while-revalidate=604800`
+- List/tags: `Cache-Control: public, max-age=3600, stale-while-revalidate=86400`
+
+## GitLab Sync Flow
+
+```
+POST /api/sync (protected by X-API-Key)
+  │
+  ├─ 1. git clone --depth=1 (or git pull) the GitLab blog repo
+  ├─ 2. Walk all *.md files
+  ├─ 3. For each file:
+  │     ├─ Parse YAML frontmatter
+  │     ├─ Skip if status == "writing"
+  │     ├─ Compute content hash, compare with gitlab_sha in DB
+  │     ├─ If new/changed:
+  │     │     ├─ Convert markdown → HTML (goldmark + syntax highlighting)
+  │     │     ├─ Calculate reading time (words / 200 wpm)
+  │     │     └─ Upsert post + tags in PostgreSQL
+  │     └─ If unchanged: skip
+  ├─ 4. Delete DB posts whose slugs no longer exist in repo
+  ├─ 5. Flush all Redis blog:* keys
+  └─ 6. Return sync summary
+```
+
+Automated via cron (Tuesday 9:00 AM IST / 3:30 AM UTC):
+```
+30 3 * * 2 curl -X POST -H "X-API-Key: $SYNC_KEY" https://api.shashwatdixit.com/api/sync
+```
+
+## Request Flow
+
+```
+Browser → GET shashwatdixit.com/blog/some-post
+  │
+  ├─ Caddy/Nginx reverse proxy → Astro (:4321)
+  │
+  ├─ Astro SSR page → fetch GET /api/posts/some-post → Go backend (:8080)
+  │     │
+  │     ├─ Redis cache hit? → return cached JSON
+  │     └─ Cache miss → query PG → cache in Redis → return JSON
+  │
+  ├─ Astro renders HTML with post content
+  └─ Browser: localStorage saves reading progress on scroll
+```
+
+## Frontend: Client-Side Search (Fuse.js)
+
+The blog list page loads a lightweight index of all posts (title, description, tags, slug) from `GET /api/posts?limit=all`. Fuse.js performs fuzzy search client-side — no backend search endpoint needed for the expected post volume. The search index is fetched once and cached in the React component state.
+
+## Frontend: Reading Progress (Device-Level)
+
+No backend involvement. Pure localStorage:
+
+```
+localStorage key: "blog-read-progress"
+Value: {
+  [slug]: {
+    scrollPercent: 0-100,
+    lastPosition: scrollY pixels,
+    contentHeight: document height at save time,
+    lastRead: unix timestamp
+  }
+}
+```
+
+- `useReadingProgress(slug)` hook: restores scroll on mount, debounced save on scroll (300ms)
+- `ReadingProgress` component: thin fixed bar at top of post page
+- Entries older than 30 days auto-cleaned
 
 ## Quick Start
+
+### Backend
+
+```bash
+cd backend
+cp .env.example .env        # fill in PG, Redis, GitLab token
+go run ./cmd/server
+```
+
+### Frontend
 
 ```bash
 cd web
@@ -114,49 +311,98 @@ pnpm dev
 
 Open http://localhost:4321.
 
-## Customizing Content
+### Full Stack (Docker)
 
-| File | Controls |
-| --- | --- |
-| `src/data/resume.tsx` | Name, bio, work, education, projects, skills, achievements, contact |
-| `src/data/config.ts` | Site URL, SEO, theme colors, typography |
-| `src/content/blog/*.mdx` | Blog posts |
+```bash
+docker compose up
+```
 
-## Commands
+## Publishing Workflow
 
-| Command | Action |
-| --- | --- |
-| `pnpm install` | Install dependencies |
-| `pnpm dev` | Start dev server at localhost:4321 |
-| `pnpm build` | Build for production (static output to `dist/`) |
-| `pnpm preview` | Preview production build locally |
+1. Write markdown in GitLab repo (`status: writing`)
+2. When ready: set `status: published`, set `date`, commit and push
+3. Tuesday 9 AM IST: cron triggers `POST /api/sync`
+4. Backend syncs: pulls repo, parses, upserts DB, flushes Redis cache
+5. Blog is live immediately (Astro SSR fetches fresh data)
 
 ## Deployment
 
-No deployment adapter is currently configured. The site builds to static HTML in `dist/`.
+```
+┌─────────────────────────────────────────────────┐
+│                   VPS / Cloud                    │
+│                                                  │
+│  Caddy (reverse proxy, auto-TLS)                 │
+│    ├─ shashwatdixit.com     → Astro (:4321)      │
+│    └─ api.shashwatdixit.com → Go backend (:8080) │
+│                                                  │
+│  PostgreSQL (:5432)                              │
+│  Redis (:6379)                                   │
+│                                                  │
+│  All services via docker-compose                 │
+└─────────────────────────────────────────────────┘
+```
 
-To deploy, add an Astro adapter for your platform of choice:
-- **Vercel**: `@astrojs/vercel`
-- **Netlify**: `@astrojs/netlify`
-- **Cloudflare**: `@astrojs/cloudflare`
-- **Node**: `@astrojs/node`
-- **Static hosting** (GitHub Pages, S3, etc.): no adapter needed, just serve `dist/`
+## TODO
 
-See [Astro deployment docs](https://docs.astro.build/en/guides/deploy/) for details.
+### Portfolio (manual data)
 
-## Manual Data TODO
+- [ ] Avatar image — add photo as `web/public/picofme.png`
+- [ ] OG image — add or generate `web/public/og_image.png`
+- [ ] GitHub profile URL — update in `resume.tsx` → `contact.social.GitHub.url`
+- [ ] LinkedIn profile URL — update in `resume.tsx` → `contact.social.LinkedIn.url`
+- [ ] Twitter/X handle — if applicable, update in `resume.tsx` and `config.ts`
+- [ ] Personal domain — update `url` in `resume.tsx` and `site.url` in `config.ts`
+- [ ] Project live URLs — Jamin and Zort in `resume.tsx` → `projects[].href`
+- [ ] Project source code URLs — GitHub repos in `resume.tsx` → `projects[].links[]`
+- [ ] Project images — add to `web/public/`, reference in `resume.tsx`
+- [ ] Company logos — replace favicon-based logos for Instahyre and Pummyz Foods
+- [ ] Photo gallery — add photos to `web/public/photos/`, enable section in `resume.tsx`
 
-The following items need to be provided manually (not extractable from the resume):
+### Backend
 
-- [ ] **Avatar image** — add personal photo as `web/public/picofme.png`
-- [ ] **OG image** — add or generate `web/public/og_image.png` for social sharing
-- [ ] **GitHub profile URL** — update in `resume.tsx` → `contact.social.GitHub.url`
-- [ ] **LinkedIn profile URL** — update in `resume.tsx` → `contact.social.LinkedIn.url`
-- [ ] **Twitter/X handle** — if applicable, update in `resume.tsx` and `config.ts`
-- [ ] **Personal domain** — update `url` in `resume.tsx` and `site.url` in `config.ts`
-- [ ] **Project live URLs** — add URLs for Jamin and Zort in `resume.tsx` → `projects[].href`
-- [ ] **Project source code URLs** — add GitHub repo links in `resume.tsx` → `projects[].links[]`
-- [ ] **Project images/screenshots** — add to `web/public/` and reference in `resume.tsx`
-- [ ] **Company logos** — optionally replace favicon-based logos for Instahyre and Pummyz Foods
-- [ ] **Photo gallery** — add photos to `web/public/photos/` and enable photos section in `resume.tsx`
-- [ ] **Blog posts** — current posts are template placeholders; write your own or remove them
+- [ ] Config loader — env vars for PG, Redis, GitLab token, API key, port
+- [ ] PostgreSQL connection pool (pgx)
+- [ ] Redis client (go-redis)
+- [ ] Database migrations runner
+- [ ] Post repository — CRUD + list with tag filter + pagination
+- [ ] Tag repository — CRUD + counts
+- [ ] Markdown service — frontmatter parsing (go-yaml) + goldmark HTML rendering
+- [ ] Sync service — git clone/pull, walk .md files, diff + upsert
+- [ ] POST /api/sync handler (API key protected)
+- [ ] GET /api/posts handler (pagination, tag filter)
+- [ ] GET /api/posts/:slug handler
+- [ ] GET /api/tags handler
+- [ ] GET /api/feed.xml handler (RSS 2.0)
+- [ ] GET /api/health handler
+- [ ] Redis cache-aside middleware (blog:* keys, 7-day TTL)
+- [ ] CORS middleware
+- [ ] HTTP cache headers (Cache-Control, ETag)
+- [ ] Dockerfile
+- [ ] .env.example
+
+### Frontend
+
+- [ ] Switch Astro to hybrid output + Node adapter
+- [ ] Add `api.baseUrl` to `web/src/data/config.ts`
+- [ ] `web/src/lib/api.ts` — typed fetch wrapper for Go backend
+- [ ] Rewrite `blog/index.astro` to fetch from API instead of content collections
+- [ ] Rewrite `blog/[slug].astro` to fetch from API
+- [ ] Add `blog/tag/[tag].astro` — tag-filtered listing
+- [ ] `BlogSearch.tsx` — Fuse.js client-side fuzzy search on blog list
+- [ ] `TagList.tsx` — tag chips with filter links
+- [ ] `ReadingProgress.tsx` — progress bar at top of post
+- [ ] `useReadingProgress.ts` — localStorage scroll position hook
+- [ ] Remove placeholder .mdx blog posts from `src/content/blog/`
+- [ ] Remove `content.config.ts` (content collections no longer needed)
+
+### DevOps
+
+- [ ] `docker-compose.yml` — Go backend, Astro, PostgreSQL, Redis
+- [ ] Caddy / Nginx reverse proxy config
+- [ ] Cron job for weekly sync (Tuesday 9 AM IST)
+- [ ] CI/CD pipeline (GitLab CI or GitHub Actions)
+
+### Future
+
+- [ ] Cross-post to Medium (REST API integration in sync service)
+- [ ] Cross-post to Substack (RSS feed import or API when available)
