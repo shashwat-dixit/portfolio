@@ -35,7 +35,7 @@ export const DATA = {
     "Software Engineer building performant backends and full-stack applications. I care about systems that scale and developer experience that doesn't suck.",
   summary:
     "I'm a software engineer at [Instahyre](https://instahyre.com) where I work on distributed systems, search infrastructure, and backend performance. Before that I built event-driven pipelines and SSR frontends as a [full-stack contractor](/#work). I hold a degree in [Electrical & Electronics Engineering from NMIT Bengaluru](https://nmit.ac.in), have authored [IEEE research papers on Quantum Computing](https://scholar.google.com/citations?user=q3MbjLQAAAAJ&hl=en), and won a [machine learning hackathon](/#achievements). I like working across the stack — from Redis locking to Elasticsearch query parsers to Next.js SPAs.",
-  avatarUrl: "/picofme.png",
+  avatarUrl: "/avatar.jpg",
   ogImage: "/og_image.png",
   sections: {
     about: { order: 1, enabled: true, heading: "About" },
