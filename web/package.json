@@ -50,6 +50,7 @@
     "vite": "^7"
   },
   "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "sharp"],
     "peerDependencyRules": {
       "allowedVersions": {
         "tsconfck>typescript": "6"
