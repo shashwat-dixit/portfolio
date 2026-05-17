@@ -3,9 +3,9 @@ export const CONFIG = {
   // Site Settings
   // ---------------------------------------------------------------------------
   site: {
-    url: "https://shashwat.dev",
+    url: "https://shashwatdixit.com",
     locale: "en_US",
-    twitterHandle: "",
+    twitterHandle: "@shashwatdev",
   },
 
   // ---------------------------------------------------------------------------
