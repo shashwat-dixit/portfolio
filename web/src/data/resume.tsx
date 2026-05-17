@@ -115,9 +115,9 @@ export const DATA = {
         icon: Icons.linkedin,
         navbar: true,
       },
-      X: {
+      Twitter: {
         name: "X",
-        url: "https://x.com",
+        url: "https://x.com/shashwatdev",
         icon: Icons.x,
         navbar: false,
       },
@@ -145,7 +145,7 @@ export const DATA = {
     },
     {
       company: "Pummyz Foods",
-      href: "https://pummyz.com",
+      href: "https://upwork.com",
       badges: ["Contract"],
       location: "Remote",
       title: "Full-Stack Developer",
@@ -169,7 +169,7 @@ export const DATA = {
   projects: [
     {
       title: "Jamin",
-      href: "",
+      href: "https://jamin.shashwatdixit.com",
       dates: "2024",
       active: true,
       description:
@@ -186,7 +186,7 @@ export const DATA = {
       links: [
         {
           type: "Source",
-          href: "",
+          href: "https://github.com/shashwatt-codes/jamin",
           icon: <Icons.github className="size-3" />,
         },
       ],
@@ -195,7 +195,7 @@ export const DATA = {
     },
     {
       title: "Zort",
-      href: "",
+      href: "https://zort.shashwatdixit.com",
       dates: "2024",
       active: true,
       description:
@@ -210,7 +210,55 @@ export const DATA = {
       links: [
         {
           type: "Source",
-          href: "",
+          href: "https://github.com/shashwatt-codes/zort",
+          icon: <Icons.github className="size-3" />,
+        },
+      ],
+      image: "",
+      video: "",
+    },
+    {
+      title: "Phabric",
+      href: "https://phabric.shashwatdixit.com",
+      dates: "2024",
+      active: true,
+      description:
+        "Phabric is Vercel but with websocket support!",
+      technologies: [
+        "Next.js",
+        "Socket.IO",
+        "Zustand",
+        "Docker",
+        "GitHub Actions",
+      ],
+      links: [
+        {
+          type: "Source",
+          href: "https://github.com/shashwatt-codes/zort",
+          icon: <Icons.github className="size-3" />,
+        },
+      ],
+      image: "",
+      video: "",
+    },
+    {
+      title: "Code Compete",
+      href: "https://codecompete.shashwatdixit.com",
+      dates: "2024",
+      active: true,
+      description:
+        "Code Compete is a platform for competitive programming problems. It is built with Next.js and Tailwind CSS. It is a platform for competitive programming problems. It is a platform for competitive programming problems.",
+      technologies: [
+        "Next.js",
+        "Socket.IO",
+        "Zustand",
+        "Docker",
+        "GitHub Actions",
+      ],
+      links: [
+        {
+          type: "Source",
+          href: "https://github.com/shashwatt-codes/zort",
           icon: <Icons.github className="size-3" />,
         },
       ],
