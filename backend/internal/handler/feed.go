@@ -49,7 +49,7 @@ func (h *FeedHandler) RSS(w http.ResponseWriter, r *http.Request) {
 			Title:       post.Title,
 			Link:        fmt.Sprintf("%s/blog/%s", h.cfg.SiteURL, post.Slug),
 			Description: post.Description,
-			PubDate:     post.PublishedAt.UTC().Format(time.RFC1123Z),
+			PubDate:     func() string { if post.PublishedAt != nil { return post.PublishedAt.UTC().Format(time.RFC1123Z) }; return "" }(),
 			GUID:        fmt.Sprintf("%s/blog/%s", h.cfg.SiteURL, post.Slug),
 		}
 		feed.Channel.Items = append(feed.Channel.Items, item)

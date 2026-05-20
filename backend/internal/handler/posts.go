@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -32,6 +33,7 @@ func (h *PostHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.svc.List(r.Context(), tag, page, limit, includeDrafts)
 	if err != nil {
+		slog.Error("list posts failed", "error", err)
 		http.Error(w, `{"error":"internal server error"}`, http.StatusInternalServerError)
 		return
 	}

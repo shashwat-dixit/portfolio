@@ -54,7 +54,7 @@ func (r *PostRepo) ListPublished(ctx context.Context, tag string, page, limit in
 			LIMIT $2 OFFSET $3`, statusFilter)
 		args = append(args, limit, offset)
 	} else {
-		countQuery = fmt.Sprintf(`SELECT COUNT(*) FROM posts WHERE %s`, statusFilter)
+		countQuery = fmt.Sprintf(`SELECT COUNT(*) FROM posts p WHERE %s`, statusFilter)
 
 		listQuery = fmt.Sprintf(`
 			SELECT p.slug, p.title, p.description, p.cover_image, p.status, p.reading_time, p.published_at,

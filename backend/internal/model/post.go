@@ -3,31 +3,31 @@ package model
 import "time"
 
 type Post struct {
-	ID          string    `json:"id"`
-	Slug        string    `json:"slug"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	ContentMD   string    `json:"-"`
-	ContentHTML string    `json:"contentHtml,omitempty"`
-	CoverImage  string    `json:"cover,omitempty"`
-	Status      string    `json:"status"`
-	ReadingTime int       `json:"readingTime"`
-	Author      string    `json:"author"`
-	PublishedAt time.Time `json:"date"`
-	UpdatedAt   time.Time `json:"updated,omitempty"`
-	GitLabSHA   string    `json:"-"`
-	CreatedAt   time.Time `json:"-"`
+	ID          string     `json:"id"`
+	Slug        string     `json:"slug"`
+	Title       string     `json:"title"`
+	Description string     `json:"description"`
+	ContentMD   string     `json:"-"`
+	ContentHTML string     `json:"contentHtml,omitempty"`
+	CoverImage  string     `json:"cover,omitempty"`
+	Status      string     `json:"status"`
+	ReadingTime int        `json:"readingTime"`
+	Author      string     `json:"author"`
+	PublishedAt *time.Time `json:"date"`
+	UpdatedAt   *time.Time `json:"updated,omitempty"`
+	GitLabSHA   string     `json:"-"`
+	CreatedAt   time.Time  `json:"-"`
 }
 
 type PostSummary struct {
-	Slug        string    `json:"slug"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	CoverImage  string    `json:"cover,omitempty"`
-	Status      string    `json:"status"`
-	ReadingTime int       `json:"readingTime"`
-	Tags        []string  `json:"tags"`
-	PublishedAt time.Time `json:"date"`
+	Slug        string     `json:"slug"`
+	Title       string     `json:"title"`
+	Description string     `json:"description"`
+	CoverImage  string     `json:"cover,omitempty"`
+	Status      string     `json:"status"`
+	ReadingTime int        `json:"readingTime"`
+	Tags        []string   `json:"tags"`
+	PublishedAt *time.Time `json:"date"`
 }
 
 type Tag struct {

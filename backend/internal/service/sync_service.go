@@ -99,12 +99,12 @@ func (s *SyncService) Sync(ctx context.Context) (*model.SyncResult, error) {
 
 		if fm.Date != "" {
 			if t, err := time.Parse("2006-01-02", fm.Date); err == nil {
-				post.PublishedAt = t
+				post.PublishedAt = &t
 			}
 		}
 		if fm.Updated != "" {
 			if t, err := time.Parse("2006-01-02", fm.Updated); err == nil {
-				post.UpdatedAt = t
+				post.UpdatedAt = &t
 			}
 		}
 		if post.Status == "" {
