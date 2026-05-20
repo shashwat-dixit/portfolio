@@ -4,18 +4,10 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     restart: unless-stopped
+    env_file: .env
     environment:
       PORT: "8080"
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_ADDR: ${REDIS_ADDR}
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
-      GITLAB_REPO: ${GITLAB_REPO:-https://gitlab.com/shashwat-dixit/blog.git}
-      GITLAB_TOKEN: ${GITLAB_TOKEN:-}
-      SYNC_API_KEY: ${SYNC_API_KEY}
-      CORS_ORIGIN: ${CORS_ORIGIN:-https://shashwatdixit.com}
-      SITE_URL: ${SITE_URL:-https://shashwatdixit.com}
-    ports:
-      - "8080:8080"
+      REDIS_TLS: "true"
 
   caddy:
     image: caddy:2-alpine

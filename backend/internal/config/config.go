@@ -8,6 +8,7 @@ type Config struct {
 	RedisAddr     string
 	RedisPassword string
 	RedisDB       int
+	RedisTLS      bool
 	GitLabRepo    string
 	GitLabToken   string
 	SyncAPIKey    string
@@ -22,6 +23,7 @@ func Load() *Config {
 		RedisAddr:     getEnv("REDIS_ADDR", "localhost:6379"),
 		RedisPassword: getEnv("REDIS_PASSWORD", ""),
 		RedisDB:       0,
+		RedisTLS:      getEnv("REDIS_TLS", "") == "true",
 		GitLabRepo:    getEnv("GITLAB_REPO", "https://gitlab.com/shashwat-dixit/blog.git"),
 		GitLabToken:   getEnv("GITLAB_TOKEN", ""),
 		SyncAPIKey:    getEnv("SYNC_API_KEY", ""),

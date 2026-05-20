@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"log/slog"
 	"net/http"
 	"os"
@@ -46,11 +47,15 @@ func main() {
 	}
 
 	// Redis
-	rdb := redis.NewClient(&redis.Options{
+	redisOpts := &redis.Options{
 		Addr:     cfg.RedisAddr,
 		Password: cfg.RedisPassword,
 		DB:       cfg.RedisDB,
-	})
+	}
+	if cfg.RedisTLS {
+		redisOpts.TLSConfig = &tls.Config{}
+	}
+	rdb := redis.NewClient(redisOpts)
 	defer rdb.Close()
 
 	// Dependencies
