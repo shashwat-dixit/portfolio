@@ -89,7 +89,7 @@ func (s *SyncService) Sync(ctx context.Context) (*model.SyncResult, error) {
 			Title:       fm.Title,
 			Description: fm.Description,
 			ContentMD:   string(raw),
-			ContentHTML:  htmlContent,
+			ContentHTML: htmlContent,
 			CoverImage:  fm.Cover,
 			Status:      fm.Status,
 			ReadingTime: (wordCount + 199) / 200,

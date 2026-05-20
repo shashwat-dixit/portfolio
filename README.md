@@ -399,10 +399,14 @@ docker compose up
 - [x] Convert project grid into carousel
 - [x] Remove the achievements section instead use that timeline to show the current work experience
 - [x] Display Draft Blogs as Coming Soon
+- [ ] Render the heading as an index on the left side
 
 ### Misc
 
 - [x] Integrate Posthog for analytics
+- [ ] Add a newsletter functionality
+- [ ] Cross-post to Medium (REST API integration in sync service)
+- [ ] Cross-post to Substack (RSS feed import or API when available)
 
 ### DevOps
 
@@ -411,8 +415,3 @@ docker compose up
 - [x] Option To Trigger Deploy and Trigger Gitlab Repo Pull (via POST /api/sync + GitLab CI)
 - [x] Cron job for weekly sync (GitLab scheduled pipeline)
 - [x] CI/CD pipeline (GitLab CI)
-
-### Future
-
-- [ ] Cross-post to Medium (REST API integration in sync service)
-- [ ] Cross-post to Substack (RSS feed import or API when available)
