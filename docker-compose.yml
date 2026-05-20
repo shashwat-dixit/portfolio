@@ -1,0 +1,35 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: "8080"
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_ADDR: ${REDIS_ADDR}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      GITLAB_REPO: ${GITLAB_REPO:-https://gitlab.com/shashwat-dixit/blog.git}
+      GITLAB_TOKEN: ${GITLAB_TOKEN:-}
+      SYNC_API_KEY: ${SYNC_API_KEY}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://shashwatdixit.com}
+      SITE_URL: ${SITE_URL:-https://shashwatdixit.com}
+    ports:
+      - "8080:8080"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+
+volumes:
+  caddy_data:
+  caddy_config:

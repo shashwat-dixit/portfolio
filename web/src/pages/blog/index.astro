@@ -17,7 +17,7 @@ let error = false;
 
 try {
   const [postsResp, tagsResp] = await Promise.all([
-    getPosts({ page, limit, tag: tag || undefined }),
+    getPosts({ page, limit, tag: tag || undefined, includeDrafts: true }),
     getTags(),
   ]);
   posts = postsResp.posts;
@@ -51,7 +51,12 @@ try {
       {tags.length > 0 && <TagList client:load tags={tags} activeTag={tag} />}
       <BlogList
         client:load
-        posts={posts.map(p => ({ id: p.slug, title: p.title, publishedAt: new Date(p.date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) }))}
+        posts={posts.map(p => ({
+          id: p.slug,
+          title: p.title,
+          publishedAt: p.status === "draft" ? "Coming Soon" : new Date(p.date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
+          isDraft: p.status === "draft",
+        }))}
         allPostsCount={pagination.total}
         pagination={{
           page: pagination.page,

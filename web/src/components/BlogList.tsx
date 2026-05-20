@@ -7,6 +7,7 @@ interface Post {
   id: string;
   title: string;
   publishedAt: string;
+  isDraft?: boolean;
 }
 
 interface Pagination {
@@ -44,30 +45,43 @@ export default function BlogList({ posts, allPostsCount, pagination, pageSize }:
             <div className="flex flex-col gap-5">
               {posts.map((post, id) => {
                 const indexNumber = (pagination.page - 1) * pageSize + id + 1;
+                const Wrapper = post.isDraft ? "div" : "a";
+                const wrapperProps = post.isDraft
+                  ? {}
+                  : { href: `/blog/${post.id}` };
+
                 return (
                   <BlurFade delay={BLUR_FADE_DELAY * 3 + id * 0.05} key={post.id}>
-                    <a
-                      className="flex items-start gap-x-2 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                      href={`/blog/${post.id}`}
+                    <Wrapper
+                      {...wrapperProps}
+                      className={`flex items-start gap-x-2 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                        post.isDraft ? "opacity-60 cursor-default" : "cursor-pointer"
+                      }`}
                     >
                       <span className="text-xs font-mono tabular-nums font-medium mt-[5px]">
                         {String(indexNumber).padStart(2, "0")}.
                       </span>
                       <div className="flex flex-col gap-y-2 flex-1">
                         <p className="tracking-tight text-lg font-medium">
-                          <span className="group-hover:text-foreground transition-colors">
+                          <span className={post.isDraft ? "" : "group-hover:text-foreground transition-colors"}>
                             {post.title}
-                            <ChevronRight
-                              className="ml-1 inline-block size-4 stroke-3 text-muted-foreground opacity-0 -translate-x-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0"
-                              aria-hidden
-                            />
+                            {post.isDraft ? (
+                              <span className="ml-2 inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
+                                Coming Soon
+                              </span>
+                            ) : (
+                              <ChevronRight
+                                className="ml-1 inline-block size-4 stroke-3 text-muted-foreground opacity-0 -translate-x-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0"
+                                aria-hidden
+                              />
+                            )}
                           </span>
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {post.publishedAt}
                         </p>
                       </div>
-                    </a>
+                    </Wrapper>
                   </BlurFade>
                 );
               })}

@@ -39,7 +39,12 @@ export const DATA = {
   ogImage: "/og_image.png",
   sections: {
     about: { order: 1, enabled: true, heading: "About" },
-    work: { order: 2, enabled: true, heading: "Work Experience", presentLabel: "Present" },
+    work: {
+      order: 2, enabled: true,
+      label: "Experience",
+      heading: "Work Experience",
+      text: "My professional journey building software at scale.",
+    },
     education: { order: 3, enabled: true, heading: "Education" },
     skills: { order: 4, enabled: true, heading: "Skills" },
     projects: {
@@ -48,18 +53,12 @@ export const DATA = {
       heading: "Check out my latest work",
       text: "I've built tools ranging from AI chat platforms to real-time collaborative whiteboards. Here are a couple of my favorites.",
     },
-    hackathons: {
-      order: 7, enabled: true,
-      label: "Experience",
-      heading: "Work Experience",
-      text: "My professional journey building software at scale.",
-    },
     photos: {
       order: 6, enabled: false,
       heading: "My Recent Travels",
     },
     contact: {
-      order: 8, enabled: true,
+      order: 7, enabled: true,
       label: "Contact",
       heading: "Get in Touch",
       text: "Want to chat? Drop me an email or reach out on LinkedIn — I'm always happy to connect.",
@@ -140,8 +139,12 @@ export const DATA = {
       logoUrl: "https://www.google.com/s2/favicons?domain=instahyre.com&sz=128",
       start: "December 2024",
       end: undefined,
-      description:
-        "Designed Redis-based distributed locking (SETNX + TTL) to eliminate double-booking under concurrent traffic. Reduced API latency by 80% (p75: 600ms → 120ms) by profiling slow PostgreSQL queries and optimizing payloads. Built a stack-based boolean query parser (AND/OR/NOT) for Elasticsearch, improving matching relevance by 20%. Reduced regression bugs by 30% by decomposing a monolith into independently maintainable modules.",
+      bullets: [
+        "Designed Redis-based distributed locking (SETNX + TTL) to eliminate double-booking under concurrent traffic",
+        "Reduced API latency by 80% (p75: 600ms → 120ms) by profiling slow PostgreSQL queries and optimizing payloads",
+        "Built a stack-based boolean query parser (AND/OR/NOT) for Elasticsearch, improving matching relevance by 20%",
+        "Reduced regression bugs by 30% by decomposing a monolith into independently maintainable modules",
+      ],
     },
     {
       company: "Pummyz Foods",
@@ -152,8 +155,12 @@ export const DATA = {
       logoUrl: "https://avatar.vercel.sh/pummyz-foods?size=40",
       start: "May 2024",
       end: "August 2024",
-      description:
-        "Designed an event-driven pipeline using Kafka for asynchronous order processing across thousands of daily events. Implemented idempotent webhook-based payment confirmation, reducing duplicate order processing by 95%. Reduced media load times by 30% via AWS S3 + CDN caching. Improved Core Web Vitals by 35% with a Next.js SSR architecture optimized for first-contentful paint and reduced JS bundle size.",
+      bullets: [
+        "Designed an event-driven pipeline using Kafka for asynchronous order processing across thousands of daily events",
+        "Implemented idempotent webhook-based payment confirmation, reducing duplicate order processing by 95%",
+        "Reduced media load times by 30% via AWS S3 + CDN caching",
+        "Improved Core Web Vitals by 35% with a Next.js SSR architecture optimized for first-contentful paint and reduced JS bundle size",
+      ],
     },
   ],
   education: [

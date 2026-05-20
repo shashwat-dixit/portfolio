@@ -24,6 +24,7 @@ type PostSummary struct {
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	CoverImage  string    `json:"cover,omitempty"`
+	Status      string    `json:"status"`
 	ReadingTime int       `json:"readingTime"`
 	Tags        []string  `json:"tags"`
 	PublishedAt time.Time `json:"date"`

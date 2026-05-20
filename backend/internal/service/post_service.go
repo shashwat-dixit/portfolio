@@ -21,8 +21,11 @@ func NewPostService(postRepo *repository.PostRepo, tagRepo *repository.TagRepo, 
 	return &PostService{postRepo: postRepo, tagRepo: tagRepo, cache: cache}
 }
 
-func (s *PostService) List(ctx context.Context, tag string, page, limit int) (*model.PostListResponse, error) {
+func (s *PostService) List(ctx context.Context, tag string, page, limit int, includeDrafts bool) (*model.PostListResponse, error) {
 	cacheKey := cache.PostListKey(tag, page, limit)
+	if includeDrafts {
+		cacheKey += ":drafts"
+	}
 
 	cached, err := s.cache.Get(ctx, cacheKey)
 	if err != nil {
@@ -35,7 +38,7 @@ func (s *PostService) List(ctx context.Context, tag string, page, limit int) (*m
 		}
 	}
 
-	posts, total, err := s.postRepo.ListPublished(ctx, tag, page, limit)
+	posts, total, err := s.postRepo.ListPublished(ctx, tag, page, limit, includeDrafts)
 	if err != nil {
 		return nil, fmt.Errorf("list posts: %w", err)
 	}

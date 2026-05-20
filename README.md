@@ -398,19 +398,19 @@ docker compose up
 - [x] Remove `content.config.ts` (content collections no longer needed)
 - [x] Convert project grid into carousel
 - [x] Remove the achievements section instead use that timeline to show the current work experience
-- [ ] Display Draft Blogs as Coming Soon
+- [x] Display Draft Blogs as Coming Soon
 
 ### Misc
 
-- [ ] Integrate Posthog for analytics
+- [x] Integrate Posthog for analytics
 
 ### DevOps
 
-- [ ] `docker-compose.yml` — Go backend, Astro, PostgreSQL, Redis
-- [ ] Caddy / Nginx reverse proxy config
-- [ ] Option To Trigger Deploy and Trigger Gitlab Repo Pull
-- [ ] Cron job for weekly sync (Tuesday 9 AM IST)
-- [ ] CI/CD pipeline (GitLab CI or GitHub Actions)
+- [x] `docker-compose.yml` — Go backend, Astro, PostgreSQL, Redis
+- [x] Caddy / Nginx reverse proxy config
+- [x] Option To Trigger Deploy and Trigger Gitlab Repo Pull (via POST /api/sync + GitLab CI)
+- [x] Cron job for weekly sync (GitLab scheduled pipeline)
+- [x] CI/CD pipeline (GitLab CI)
 
 ### Future
 

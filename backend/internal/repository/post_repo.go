@@ -19,24 +19,29 @@ func NewPostRepo(pool *pgxpool.Pool) *PostRepo {
 	return &PostRepo{pool: pool}
 }
 
-func (r *PostRepo) ListPublished(ctx context.Context, tag string, page, limit int) ([]model.PostSummary, int, error) {
+func (r *PostRepo) ListPublished(ctx context.Context, tag string, page, limit int, includeDrafts bool) ([]model.PostSummary, int, error) {
 	offset := (page - 1) * limit
+
+	statusFilter := "p.status = 'published'"
+	if includeDrafts {
+		statusFilter = "p.status IN ('published', 'draft')"
+	}
 
 	var countQuery string
 	var listQuery string
 	var args []any
 
 	if tag != "" {
-		countQuery = `
+		countQuery = fmt.Sprintf(`
 			SELECT COUNT(DISTINCT p.id)
 			FROM posts p
 			JOIN post_tags pt ON pt.post_id = p.id
 			JOIN tags t ON t.id = pt.tag_id
-			WHERE p.status = 'published' AND t.slug = $1`
+			WHERE %s AND t.slug = $1`, statusFilter)
 		args = append(args, tag)
 
-		listQuery = `
-			SELECT p.slug, p.title, p.description, p.cover_image, p.reading_time, p.published_at,
+		listQuery = fmt.Sprintf(`
+			SELECT p.slug, p.title, p.description, p.cover_image, p.status, p.reading_time, p.published_at,
 				COALESCE(
 					(SELECT array_agg(t2.name) FROM tags t2 JOIN post_tags pt2 ON pt2.tag_id = t2.id WHERE pt2.post_id = p.id),
 					'{}'
@@ -44,23 +49,23 @@ func (r *PostRepo) ListPublished(ctx context.Context, tag string, page, limit in
 			FROM posts p
 			JOIN post_tags pt ON pt.post_id = p.id
 			JOIN tags t ON t.id = pt.tag_id
-			WHERE p.status = 'published' AND t.slug = $1
-			ORDER BY p.published_at DESC
-			LIMIT $2 OFFSET $3`
+			WHERE %s AND t.slug = $1
+			ORDER BY p.published_at DESC NULLS LAST
+			LIMIT $2 OFFSET $3`, statusFilter)
 		args = append(args, limit, offset)
 	} else {
-		countQuery = `SELECT COUNT(*) FROM posts WHERE status = 'published'`
+		countQuery = fmt.Sprintf(`SELECT COUNT(*) FROM posts WHERE %s`, statusFilter)
 
-		listQuery = `
-			SELECT p.slug, p.title, p.description, p.cover_image, p.reading_time, p.published_at,
+		listQuery = fmt.Sprintf(`
+			SELECT p.slug, p.title, p.description, p.cover_image, p.status, p.reading_time, p.published_at,
 				COALESCE(
 					(SELECT array_agg(t.name) FROM tags t JOIN post_tags pt ON pt.tag_id = t.id WHERE pt.post_id = p.id),
 					'{}'
 				) AS tags
 			FROM posts p
-			WHERE p.status = 'published'
-			ORDER BY p.published_at DESC
-			LIMIT $1 OFFSET $2`
+			WHERE %s
+			ORDER BY p.published_at DESC NULLS LAST
+			LIMIT $1 OFFSET $2`, statusFilter)
 		args = append(args, limit, offset)
 	}
 
@@ -87,7 +92,7 @@ func (r *PostRepo) ListPublished(ctx context.Context, tag string, page, limit in
 	for rows.Next() {
 		var p model.PostSummary
 		var tags []string
-		if err := rows.Scan(&p.Slug, &p.Title, &p.Description, &p.CoverImage, &p.ReadingTime, &p.PublishedAt, &tags); err != nil {
+		if err := rows.Scan(&p.Slug, &p.Title, &p.Description, &p.CoverImage, &p.Status, &p.ReadingTime, &p.PublishedAt, &tags); err != nil {
 			return nil, 0, fmt.Errorf("scan post: %w", err)
 		}
 		p.Tags = tags

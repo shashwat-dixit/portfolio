@@ -1,0 +1,143 @@
+stages:
+  - test
+  - build
+  - deploy
+  - sync
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+
+# --------------------------------------------------------------------------
+# Test stage
+# --------------------------------------------------------------------------
+
+test:backend:
+  stage: test
+  image: golang:1.26-alpine
+  script:
+    - cd backend
+    - go vet ./...
+    - go build ./...
+  rules:
+    - changes:
+        - backend/**/*
+
+test:frontend:
+  stage: test
+  image: node:22-alpine
+  before_script:
+    - corepack enable && corepack prepare pnpm@latest --activate
+    - cd web && pnpm install --frozen-lockfile
+  script:
+    - pnpm build
+  rules:
+    - changes:
+        - web/**/*
+
+# --------------------------------------------------------------------------
+# Build stage — backend Docker image
+# --------------------------------------------------------------------------
+
+build:backend:
+  stage: build
+  image: docker:27
+  services:
+    - docker:27-dind
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHORT_SHA -t $CI_REGISTRY_IMAGE/backend:latest ./backend
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHORT_SHA
+    - docker push $CI_REGISTRY_IMAGE/backend:latest
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - backend/**/*
+
+# --------------------------------------------------------------------------
+# Deploy stage
+# --------------------------------------------------------------------------
+
+deploy:backend:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | ssh-add -
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+  script:
+    - |
+      ssh $DEPLOY_USER@$DEPLOY_HOST << 'EOF'
+        cd ~/portfolio
+        docker compose pull
+        docker compose up -d --remove-orphans
+        docker image prune -f
+      EOF
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - backend/**/*
+        - docker-compose.yml
+        - Caddyfile
+  environment:
+    name: production
+    url: https://api.shashwatdixit.com
+
+deploy:frontend:
+  stage: deploy
+  image: node:22-alpine
+  before_script:
+    - corepack enable && corepack prepare pnpm@latest --activate
+    - cd web && pnpm install --frozen-lockfile
+    - npx wrangler --version
+  script:
+    - cd web
+    - pnpm build
+    - npx wrangler pages deploy dist/client --project-name=portfolio
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - web/**/*
+  environment:
+    name: production
+    url: https://shashwatdixit.com
+
+# --------------------------------------------------------------------------
+# Sync stage — trigger blog content sync after backend deploy
+# --------------------------------------------------------------------------
+
+trigger:sync:
+  stage: sync
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - |
+      curl -sf -X POST \
+        -H "X-API-Key: $SYNC_API_KEY" \
+        "${SITE_URL:-https://api.shashwatdixit.com}/api/sync"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  needs:
+    - deploy:backend
+  allow_failure: true
+
+# --------------------------------------------------------------------------
+# Scheduled sync — runs weekly (configure in GitLab: Settings > CI/CD > Schedules)
+# Set cron to: 30 3 * * 2 (Tuesday 9:00 AM IST / 3:30 AM UTC)
+# --------------------------------------------------------------------------
+
+scheduled:sync:
+  stage: sync
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - |
+      curl -sf -X POST \
+        -H "X-API-Key: $SYNC_API_KEY" \
+        "${SITE_URL:-https://api.shashwatdixit.com}/api/sync"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"

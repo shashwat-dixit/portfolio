@@ -21,7 +21,7 @@ func NewFeedHandler(svc *service.PostService, cfg *config.Config) *FeedHandler {
 }
 
 func (h *FeedHandler) RSS(w http.ResponseWriter, r *http.Request) {
-	resp, err := h.svc.List(r.Context(), "", 1, 50)
+	resp, err := h.svc.List(r.Context(), "", 1, 50, false)
 	if err != nil {
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return

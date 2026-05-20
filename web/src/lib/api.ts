@@ -7,6 +7,7 @@ export interface PostSummary {
   title: string;
   description: string;
   cover: string;
+  status: "published" | "draft";
   readingTime: number;
   tags: string[];
   date: string;
@@ -62,12 +63,13 @@ async function fetchAPI<T>(path: string): Promise<T> {
 }
 
 export async function getPosts(
-  options: { tag?: string; page?: number; limit?: number } = {}
+  options: { tag?: string; page?: number; limit?: number; includeDrafts?: boolean } = {}
 ): Promise<PostListResponse> {
   const params = new URLSearchParams();
   if (options.tag) params.set("tag", options.tag);
   if (options.page) params.set("page", String(options.page));
   if (options.limit) params.set("limit", String(options.limit));
+  if (options.includeDrafts) params.set("drafts", "true");
 
   const query = params.toString();
   return fetchAPI<PostListResponse>(`/api/posts${query ? `?${query}` : ""}`);

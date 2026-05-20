@@ -1,5 +1,9 @@
 name = "portfolio"
 compatibility_date = "2025-05-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+PUBLIC_API_URL = "https://api.shashwatdixit.com"
 
 [assets]
-directory = "./dist"
+directory = "./dist/client"

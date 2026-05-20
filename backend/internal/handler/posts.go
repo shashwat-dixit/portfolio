@@ -21,6 +21,7 @@ func (h *PostHandler) List(w http.ResponseWriter, r *http.Request) {
 	tag := r.URL.Query().Get("tag")
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	includeDrafts := r.URL.Query().Get("drafts") == "true"
 
 	if page < 1 {
 		page = 1
@@ -29,7 +30,7 @@ func (h *PostHandler) List(w http.ResponseWriter, r *http.Request) {
 		limit = 10
 	}
 
-	resp, err := h.svc.List(r.Context(), tag, page, limit)
+	resp, err := h.svc.List(r.Context(), tag, page, limit, includeDrafts)
 	if err != nil {
 		http.Error(w, `{"error":"internal server error"}`, http.StatusInternalServerError)
 		return
