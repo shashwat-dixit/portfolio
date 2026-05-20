@@ -1,30 +1,87 @@
 package service
 
 import (
+	"bytes"
+	"fmt"
+	"strings"
+	"unicode"
+
 	"gitlab.com/shashwat-dixit/portfolio/backend/internal/model"
+
+	"github.com/yuin/goldmark"
+	highlighting "github.com/yuin/goldmark-highlighting/v2"
+	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer/html"
+	"gopkg.in/yaml.v3"
 )
 
 type MarkdownService struct {
-	// TODO: hold a goldmark.Markdown instance configured with:
-	// - GFM extension (tables, strikethrough, autolinks)
-	// - syntax highlighting via Chroma
-	// - heading IDs
+	md goldmark.Markdown
 }
 
 func NewMarkdown() *MarkdownService {
-	// TODO: initialize goldmark with extensions
-	return &MarkdownService{}
+	md := goldmark.New(
+		goldmark.WithExtensions(
+			extension.GFM,
+			extension.Typographer,
+			highlighting.NewHighlighting(
+				highlighting.WithStyle("github"),
+				highlighting.WithFormatOptions(),
+			),
+		),
+		goldmark.WithParserOptions(
+			parser.WithAutoHeadingID(),
+		),
+		goldmark.WithRendererOptions(
+			html.WithUnsafe(),
+		),
+	)
+	return &MarkdownService{md: md}
 }
 
-// Parse splits a raw markdown file into frontmatter + body,
-// parses the YAML frontmatter, and renders the body to HTML.
-//
-// Returns the parsed frontmatter, rendered HTML string, and word count.
 func (s *MarkdownService) Parse(raw []byte) (*model.Frontmatter, string, int, error) {
-	// TODO:
-	// 1. Split on "---" delimiters to extract YAML block
-	// 2. yaml.Unmarshal into model.Frontmatter
-	// 3. Render markdown body to HTML via goldmark
-	// 4. Count words in body for reading time calculation
-	return nil, "", 0, nil
+	fm, body, err := splitFrontmatter(raw)
+	if err != nil {
+		return nil, "", 0, err
+	}
+
+	var frontmatter model.Frontmatter
+	if err := yaml.Unmarshal(fm, &frontmatter); err != nil {
+		return nil, "", 0, fmt.Errorf("parse frontmatter yaml: %w", err)
+	}
+
+	var buf bytes.Buffer
+	if err := s.md.Convert(body, &buf); err != nil {
+		return nil, "", 0, fmt.Errorf("render markdown: %w", err)
+	}
+
+	wordCount := countWords(body)
+
+	return &frontmatter, buf.String(), wordCount, nil
+}
+
+func splitFrontmatter(raw []byte) ([]byte, []byte, error) {
+	content := string(raw)
+	content = strings.TrimLeftFunc(content, unicode.IsSpace)
+
+	if !strings.HasPrefix(content, "---") {
+		return nil, raw, nil
+	}
+
+	content = content[3:]
+	end := strings.Index(content, "\n---")
+	if end == -1 {
+		return nil, raw, fmt.Errorf("unterminated frontmatter")
+	}
+
+	fm := []byte(content[:end])
+	body := []byte(content[end+4:])
+
+	return fm, body, nil
+}
+
+func countWords(text []byte) int {
+	words := strings.Fields(string(text))
+	return len(words)
 }

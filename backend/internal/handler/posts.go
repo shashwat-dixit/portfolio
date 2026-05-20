@@ -1,8 +1,11 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
+	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"gitlab.com/shashwat-dixit/portfolio/backend/internal/service"
 )
 
@@ -14,15 +17,60 @@ func NewPostHandler(svc *service.PostService) *PostHandler {
 	return &PostHandler{svc: svc}
 }
 
-// List handles GET /api/posts
-// Query params: ?tag=, ?page=, ?limit=, ?q=
 func (h *PostHandler) List(w http.ResponseWriter, r *http.Request) {
-	// TODO: parse query params, call h.svc.List, return JSON
-	w.WriteHeader(http.StatusNotImplemented)
+	tag := r.URL.Query().Get("tag")
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 10
+	}
+
+	resp, err := h.svc.List(r.Context(), tag, page, limit)
+	if err != nil {
+		http.Error(w, `{"error":"internal server error"}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400")
+	json.NewEncoder(w).Encode(resp)
 }
 
-// GetBySlug handles GET /api/posts/{slug}
 func (h *PostHandler) GetBySlug(w http.ResponseWriter, r *http.Request) {
-	// TODO: extract slug from path, call h.svc.GetBySlug, return JSON
-	w.WriteHeader(http.StatusNotImplemented)
+	slug := chi.URLParam(r, "slug")
+	if slug == "" {
+		http.Error(w, `{"error":"slug required"}`, http.StatusBadRequest)
+		return
+	}
+
+	post, tags, err := h.svc.GetBySlug(r.Context(), slug)
+	if err != nil {
+		http.Error(w, `{"error":"internal server error"}`, http.StatusInternalServerError)
+		return
+	}
+	if post == nil {
+		http.Error(w, `{"error":"not found"}`, http.StatusNotFound)
+		return
+	}
+
+	resp := map[string]any{
+		"slug":        post.Slug,
+		"title":       post.Title,
+		"description": post.Description,
+		"contentHtml": post.ContentHTML,
+		"tags":        tags,
+		"date":        post.PublishedAt,
+		"updated":     post.UpdatedAt,
+		"cover":       post.CoverImage,
+		"readingTime": post.ReadingTime,
+		"author":      post.Author,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800")
+	json.NewEncoder(w).Encode(resp)
 }

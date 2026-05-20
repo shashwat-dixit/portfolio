@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"encoding/json"
+	"log/slog"
 	"net/http"
 
 	"gitlab.com/shashwat-dixit/portfolio/backend/internal/service"
@@ -15,8 +17,14 @@ func NewSyncHandler(svc *service.SyncService, apiKey string) *SyncHandler {
 	return &SyncHandler{svc: svc, apiKey: apiKey}
 }
 
-// Sync handles POST /api/sync
 func (h *SyncHandler) Sync(w http.ResponseWriter, r *http.Request) {
-	// TODO: call h.svc.Sync, return SyncResult JSON
-	w.WriteHeader(http.StatusNotImplemented)
+	result, err := h.svc.Sync(r.Context())
+	if err != nil {
+		slog.Error("sync failed", "error", err)
+		http.Error(w, `{"error":"sync failed"}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(result)
 }

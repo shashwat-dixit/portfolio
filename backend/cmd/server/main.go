@@ -13,6 +13,7 @@ import (
 	"gitlab.com/shashwat-dixit/portfolio/backend/internal/config"
 	"gitlab.com/shashwat-dixit/portfolio/backend/internal/handler"
 	"gitlab.com/shashwat-dixit/portfolio/backend/internal/middleware"
+	"gitlab.com/shashwat-dixit/portfolio/backend/internal/migrate"
 	"gitlab.com/shashwat-dixit/portfolio/backend/internal/repository"
 	"gitlab.com/shashwat-dixit/portfolio/backend/internal/service"
 
@@ -37,6 +38,12 @@ func main() {
 		os.Exit(1)
 	}
 	defer pool.Close()
+
+	// Run migrations
+	if err := migrate.Run(context.Background(), pool, "migrations"); err != nil {
+		slog.Error("failed to run migrations", "error", err)
+		os.Exit(1)
+	}
 
 	// Redis
 	rdb := redis.NewClient(&redis.Options{

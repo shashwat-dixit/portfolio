@@ -1,7 +1,74 @@
 ---
-export const prerender = true;
+import Layout from "@/layouts/Layout.astro";
+import ReadingProgress from "@/components/ReadingProgress";
+import { getPostBySlug } from "@/lib/api";
 
-export function getStaticPaths() {
-  return [];
+const { slug } = Astro.params;
+
+if (!slug) {
+  return Astro.redirect("/blog");
 }
+
+let post: any = null;
+try {
+  post = await getPostBySlug(slug);
+} catch (e) {
+  console.error("Failed to fetch post:", e);
+}
+
+if (!post) {
+  return Astro.redirect("/404");
+}
+
+const formattedDate = new Date(post.date).toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
 ---
+
+<Layout title={post.title} description={post.description} image={post.cover}>
+  <ReadingProgress client:load slug={slug} />
+  <article class="flex flex-col gap-8">
+    <header class="flex flex-col gap-4">
+      <a
+        href="/blog"
+        class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Back to Blog
+      </a>
+      {post.cover && (
+        <img
+          src={post.cover}
+          alt={post.title}
+          class="w-full h-48 sm:h-64 object-cover rounded-xl border border-border"
+        />
+      )}
+      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight">{post.title}</h1>
+      <div class="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+        <span>{post.author}</span>
+        <span aria-hidden="true">·</span>
+        <time datetime={post.date}>{formattedDate}</time>
+        <span aria-hidden="true">·</span>
+        <span>{post.readingTime} min read</span>
+      </div>
+      {post.tags && post.tags.length > 0 && (
+        <div class="flex flex-wrap gap-2">
+          {post.tags.map((tag: string) => (
+            <a
+              href={`/blog?tag=${tag.toLowerCase().replace(/\s+/g, "-")}`}
+              class="text-xs px-2.5 py-1 rounded-full border border-border bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+            >
+              {tag}
+            </a>
+          ))}
+        </div>
+      )}
+    </header>
+    <div
+      class="prose prose-lg max-w-none dark:prose-invert prose-headings:font-semibold prose-headings:tracking-tight prose-a:text-primary prose-code:text-sm"
+      set:html={post.contentHtml}
+    />
+  </article>
+</Layout>

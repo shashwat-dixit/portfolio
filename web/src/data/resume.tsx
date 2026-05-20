@@ -50,9 +50,9 @@ export const DATA = {
     },
     hackathons: {
       order: 7, enabled: true,
-      label: "Achievements",
-      heading: "Achievements & Recognition",
-      text: "Research papers, hackathon wins, and academic recognition from my time in university and beyond.",
+      label: "Experience",
+      heading: "Work Experience",
+      text: "My professional journey building software at scale.",
     },
     photos: {
       order: 6, enabled: false,

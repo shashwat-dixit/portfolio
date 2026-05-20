@@ -222,6 +222,7 @@ GET  /api/health                  Health check
 On `POST /api/sync`, all `blog:*` keys are flushed. Cache-aside pattern: handler checks Redis first, falls back to PG, writes to Redis on miss.
 
 HTTP response headers for CDN caching:
+
 - Single post: `Cache-Control: public, max-age=86400, stale-while-revalidate=604800`
 - List/tags: `Cache-Control: public, max-age=3600, stale-while-revalidate=86400`
 
@@ -247,6 +248,7 @@ POST /api/sync (protected by X-API-Key)
 ```
 
 Automated via cron (Tuesday 9:00 AM IST / 3:30 AM UTC):
+
 ```
 30 3 * * 2 curl -X POST -H "X-API-Key: $SYNC_KEY" https://api.shashwatdixit.com/api/sync
 ```
@@ -309,7 +311,7 @@ pnpm install
 pnpm dev
 ```
 
-Open http://localhost:4321.
+Open <http://localhost:4321>.
 
 ### Full Stack (Docker)
 
@@ -360,45 +362,53 @@ docker compose up
 
 ### Backend
 
-- [ ] Config loader — env vars for PG, Redis, GitLab token, API key, port
-- [ ] PostgreSQL connection pool (pgx)
-- [ ] Redis client (go-redis)
-- [ ] Database migrations runner
-- [ ] Post repository — CRUD + list with tag filter + pagination
-- [ ] Tag repository — CRUD + counts
-- [ ] Markdown service — frontmatter parsing (go-yaml) + goldmark HTML rendering
-- [ ] Sync service — git clone/pull, walk .md files, diff + upsert
-- [ ] POST /api/sync handler (API key protected)
-- [ ] GET /api/posts handler (pagination, tag filter)
-- [ ] GET /api/posts/:slug handler
-- [ ] GET /api/tags handler
-- [ ] GET /api/feed.xml handler (RSS 2.0)
-- [ ] GET /api/health handler
-- [ ] Redis cache-aside middleware (blog:* keys, 7-day TTL)
-- [ ] CORS middleware
-- [ ] HTTP cache headers (Cache-Control, ETag)
-- [ ] Dockerfile
-- [ ] .env.example
+- [x] Config loader — env vars for PG, Redis, GitLab token, API key, port
+- [x] PostgreSQL connection pool (pgx)
+- [x] Redis client (go-redis)
+- [x] Database migrations runner
+- [x] Post repository — CRUD + list with tag filter + pagination
+- [x] Tag repository — CRUD + counts
+- [x] Markdown service — frontmatter parsing (go-yaml) + goldmark HTML rendering
+- [x] Sync service — git clone/pull, walk .md files, diff + upsert
+- [x] POST /api/sync handler (API key protected)
+- [x] GET /api/posts handler (pagination, tag filter)
+- [x] GET /api/posts/:slug handler
+- [x] GET /api/tags handler
+- [x] GET /api/feed.xml handler (RSS 2.0)
+- [x] GET /api/health handler
+- [x] Redis cache-aside middleware (blog:* keys, 7-day TTL)
+- [x] CORS middleware
+- [x] HTTP cache headers (Cache-Control, ETag)
+- [x] Dockerfile
+- [x] .env.example
 
 ### Frontend
 
-- [ ] Switch Astro to hybrid output + Node adapter
-- [ ] Add `api.baseUrl` to `web/src/data/config.ts`
-- [ ] `web/src/lib/api.ts` — typed fetch wrapper for Go backend
-- [ ] Rewrite `blog/index.astro` to fetch from API instead of content collections
-- [ ] Rewrite `blog/[slug].astro` to fetch from API
-- [ ] Add `blog/tag/[tag].astro` — tag-filtered listing
-- [ ] `BlogSearch.tsx` — Fuse.js client-side fuzzy search on blog list
-- [ ] `TagList.tsx` — tag chips with filter links
-- [ ] `ReadingProgress.tsx` — progress bar at top of post
-- [ ] `useReadingProgress.ts` — localStorage scroll position hook
-- [ ] Remove placeholder .mdx blog posts from `src/content/blog/`
-- [ ] Remove `content.config.ts` (content collections no longer needed)
+- [x] Switch Astro to hybrid output + Node adapter
+- [x] Add `api.baseUrl` to `web/src/data/config.ts`
+- [x] `web/src/lib/api.ts` — typed fetch wrapper for Go backend
+- [x] Rewrite `blog/index.astro` to fetch from API instead of content collections
+- [x] Rewrite `blog/[slug].astro` to fetch from API
+- [x] Add `blog/tag/[tag].astro` — tag-filtered listing
+- [x] `BlogSearch.tsx` — Fuse.js client-side fuzzy search on blog list
+- [x] `TagList.tsx` — tag chips with filter links
+- [x] `ReadingProgress.tsx` — progress bar at top of post
+- [x] `useReadingProgress.ts` — localStorage scroll position hook
+- [x] Remove placeholder .mdx blog posts from `src/content/blog/`
+- [x] Remove `content.config.ts` (content collections no longer needed)
+- [x] Convert project grid into carousel
+- [x] Remove the achievements section instead use that timeline to show the current work experience
+- [ ] Display Draft Blogs as Coming Soon
+
+### Misc
+
+- [ ] Integrate Posthog for analytics
 
 ### DevOps
 
 - [ ] `docker-compose.yml` — Go backend, Astro, PostgreSQL, Redis
 - [ ] Caddy / Nginx reverse proxy config
+- [ ] Option To Trigger Deploy and Trigger Gitlab Repo Pull
 - [ ] Cron job for weekly sync (Tuesday 9 AM IST)
 - [ ] CI/CD pipeline (GitLab CI or GitHub Actions)
 
