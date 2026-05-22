@@ -293,17 +293,64 @@ Value: {
 - `ReadingProgress` component: thin fixed bar at top of post page
 - Entries older than 30 days auto-cleaned
 
-## Quick Start
+## Local Development
 
-### Backend
+### Prerequisites
+
+- Docker & Docker Compose
+- Node.js ≥ 22
+- pnpm
+
+### 1. Configure environment
 
 ```bash
-cd backend
-cp .env.example .env        # fill in PG, Redis, GitLab token
-go run ./cmd/server
+cp .env.example .env
 ```
 
-### Frontend
+Fill in the GitLab credentials in `.env`:
+
+```env
+GITLAB_REPO=https://gitlab.com/shashwat-dixit/blog.git
+GITLAB_TOKEN=glpat-xxxxxxxxxxxxxxxxxxxx
+SYNC_API_KEY=any-secret-string-for-local
+```
+
+The remaining values (PostgreSQL, Redis, CORS) are overridden by `docker-compose.local.yml` for local development — no need to change them.
+
+### 2. Start the backend
+
+```bash
+docker compose -f docker-compose.local.yml up -d
+```
+
+This starts three containers:
+
+| Service    | Port   | Details                          |
+| ---------- | ------ | -------------------------------- |
+| PostgreSQL | `5432` | User `postgres`, password `postgres`, DB `portfolio` |
+| Redis      | `6379` | No password                      |
+| Backend    | `8080` | Go API server                    |
+
+The backend auto-runs database migrations on startup.
+
+### 3. Sync blog posts
+
+Pull markdown posts from the GitLab repo into the local database:
+
+```bash
+curl -X POST http://localhost:8080/api/sync \
+  -H "X-API-Key: <your SYNC_API_KEY from .env>"
+```
+
+You should see a response like:
+
+```json
+{"synced":97,"created":97,"updated":0,"deleted":0}
+```
+
+Re-run this command anytime you want to pull the latest posts.
+
+### 4. Start the frontend
 
 ```bash
 cd web
@@ -311,12 +358,27 @@ pnpm install
 pnpm dev
 ```
 
-Open <http://localhost:4321>.
+Open <http://localhost:4321>. The frontend fetches data from the backend at `http://localhost:8080`.
 
-### Full Stack (Docker)
+### Verify everything works
+
+- **Blog listing**: <http://localhost:4321/blog>
+- **Health check**: <http://localhost:8080/api/health>
+- **API posts**: <http://localhost:8080/api/posts>
+
+### Stopping
 
 ```bash
-docker compose up
+docker compose -f docker-compose.local.yml down     # stop and remove containers
+docker compose -f docker-compose.local.yml down -v   # also delete database volume
+```
+
+### Production (Docker)
+
+The production `docker-compose.yml` runs only the backend (PostgreSQL and Redis are external services). Caddy handles reverse proxy and TLS:
+
+```bash
+docker compose up -d
 ```
 
 ## Publishing Workflow
@@ -399,7 +461,7 @@ docker compose up
 - [x] Convert project grid into carousel
 - [x] Remove the achievements section instead use that timeline to show the current work experience
 - [x] Display Draft Blogs as Coming Soon
-- [ ] Render the heading as an index on the left side
+- [X] Render the headings and subheading as a table of content on the left side
 
 ### Misc
 
@@ -408,7 +470,7 @@ docker compose up
 - [ ] Cross-post to Medium (REST API integration in sync service)
 - [ ] Cross-post to Substack (RSS feed import or API when available)
 - [ ] Cache the landing page and utilize bf cache when navigating back from blog
-- [ ] Fix the click on dark mode button
+- [x] Fix the click on dark mode button
 
 ### DevOps
 

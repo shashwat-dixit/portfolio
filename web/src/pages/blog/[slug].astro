@@ -1,6 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import ReadingProgress from "@/components/ReadingProgress";
+import BlogTOC from "@/components/BlogTOC";
 import { getPostBySlug } from "@/lib/api";
 
 const { slug } = Astro.params;
@@ -29,6 +30,7 @@ const formattedDate = new Date(post.date).toLocaleDateString("en-US", {
 
 <Layout title={post.title} description={post.description} image={post.cover}>
   <ReadingProgress client:load slug={slug} />
+  <BlogTOC client:load contentHtml={post.contentHtml} />
   <article class="flex flex-col gap-8">
     <header class="flex flex-col gap-4">
       <a
