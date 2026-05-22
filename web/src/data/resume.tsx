@@ -104,7 +104,7 @@ export const DATA = {
     social: {
       GitHub: {
         name: "GitHub",
-        url: "https://github.com/shashwatt-codes",
+        url: "https://github.com/shashwat-dixit",
         icon: Icons.github,
         navbar: true,
       },
@@ -193,7 +193,7 @@ export const DATA = {
       links: [
         {
           type: "Source",
-          href: "https://github.com/shashwatt-codes/jamin",
+          href: "https://github.com/shashwat-dixit/jamin",
           icon: <Icons.github className="size-3" />,
         },
       ],
@@ -217,7 +217,7 @@ export const DATA = {
       links: [
         {
           type: "Source",
-          href: "https://github.com/shashwatt-codes/zort",
+          href: "https://github.com/shashwat-dixit/zort",
           icon: <Icons.github className="size-3" />,
         },
       ],
@@ -241,7 +241,7 @@ export const DATA = {
       links: [
         {
           type: "Source",
-          href: "https://github.com/shashwatt-codes/zort",
+          href: "https://github.com/shashwat-dixit/zort",
           icon: <Icons.github className="size-3" />,
         },
       ],
@@ -265,7 +265,7 @@ export const DATA = {
       links: [
         {
           type: "Source",
-          href: "https://github.com/shashwatt-codes/zort",
+          href: "https://github.com/shashwat-dixit/zort",
           icon: <Icons.github className="size-3" />,
         },
       ],
