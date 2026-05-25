@@ -72,8 +72,8 @@ func (s *SyncService) Sync(ctx context.Context) (*model.SyncResult, error) {
 		}
 
 		if fm.Slug == "" {
-			base := filepath.Base(path)
-			fm.Slug = strings.TrimSuffix(base, filepath.Ext(base))
+			slog.Warn("skipping post without slug", "path", path)
+			continue
 		}
 
 		seenSlugs[fm.Slug] = true

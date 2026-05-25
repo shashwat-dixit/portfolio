@@ -44,7 +44,6 @@ export default function BlogList({ posts, allPostsCount, pagination, pageSize }:
           <BlurFade delay={BLUR_FADE_DELAY * 2}>
             <div className="flex flex-col gap-5">
               {posts.map((post, id) => {
-                const indexNumber = (pagination.page - 1) * pageSize + id + 1;
                 const Wrapper = post.isDraft ? "div" : "a";
                 const wrapperProps = post.isDraft
                   ? {}
@@ -54,13 +53,10 @@ export default function BlogList({ posts, allPostsCount, pagination, pageSize }:
                   <BlurFade delay={BLUR_FADE_DELAY * 3 + id * 0.05} key={post.id}>
                     <Wrapper
                       {...wrapperProps}
-                      className={`flex items-start gap-x-2 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                      className={`flex items-start group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                         post.isDraft ? "opacity-60 cursor-default" : "cursor-pointer"
                       }`}
                     >
-                      <span className="text-xs font-mono tabular-nums font-medium mt-[5px]">
-                        {String(indexNumber).padStart(2, "0")}.
-                      </span>
                       <div className="flex flex-col gap-y-2 flex-1">
                         <p className="tracking-tight text-lg font-medium">
                           <span className={post.isDraft ? "" : "group-hover:text-foreground transition-colors"}>
