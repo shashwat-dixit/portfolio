@@ -61,7 +61,7 @@ export const DATA = {
       order: 7, enabled: true,
       label: "Contact",
       heading: "Get in Touch",
-      text: "Want to chat? Drop me an email or reach out on LinkedIn — I'm always happy to connect.",
+      text: "Have something in mind? Shoot me an email, connect on LinkedIn, or book a quick call — I'd love to hear from you.",
     },
   },
   photos: [

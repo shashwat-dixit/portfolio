@@ -1,5 +1,6 @@
 import { FlickeringGrid } from "@/components/magicui/flickering-grid";
 import { DATA } from "@/data/resume";
+import { CalendarDays } from "lucide-react";
 
 export default function ContactSection() {
   return (
@@ -25,6 +26,15 @@ export default function ContactSection() {
         <p className="mx-auto max-w-lg text-muted-foreground text-balance">
           {DATA.sections.contact.text}
         </p>
+        <a
+          href="https://cal.com/shashwatdixit/meeting"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+        >
+          <CalendarDays className="size-4" />
+          Schedule a Meeting
+        </a>
       </div>
     </div>
   );
