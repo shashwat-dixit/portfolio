@@ -8,6 +8,7 @@ import (
 
 	"gitlab.com/shashwat-dixit/portfolio/backend/internal/model"
 
+	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/yuin/goldmark"
 	highlighting "github.com/yuin/goldmark-highlighting/v2"
 	"github.com/yuin/goldmark/extension"
@@ -27,7 +28,9 @@ func NewMarkdown() *MarkdownService {
 			extension.Typographer,
 			highlighting.NewHighlighting(
 				highlighting.WithStyle("github"),
-				highlighting.WithFormatOptions(),
+				highlighting.WithFormatOptions(
+					chromahtml.WithClasses(true),
+				),
 			),
 		),
 		goldmark.WithParserOptions(

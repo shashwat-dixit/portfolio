@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { ClientRouter } from "astro:transitions";
 import { DATA } from "@/data/resume";
 import { CONFIG } from "@/data/config";
 import NavbarIsland from "@/components/NavbarIsland";
@@ -41,21 +42,25 @@ const { baseFontSize } = CONFIG.typography;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
 
-    <!-- FOUC prevention: apply stored theme before first paint -->
+    <!-- FOUC prevention: apply stored theme before first paint + on client-side nav -->
     <script is:inline>
       (function () {
-        try {
-          var theme = localStorage.getItem("theme");
-          if (
-            theme === "dark" ||
-            (!theme &&
-              window.matchMedia("(prefers-color-scheme: dark)").matches)
-          ) {
-            document.documentElement.classList.add("dark");
-          } else {
-            document.documentElement.classList.remove("dark");
-          }
-        } catch (_) {}
+        function applyTheme() {
+          try {
+            var theme = localStorage.getItem("theme");
+            if (
+              theme === "dark" ||
+              (!theme &&
+                window.matchMedia("(prefers-color-scheme: dark)").matches)
+            ) {
+              document.documentElement.classList.add("dark");
+            } else {
+              document.documentElement.classList.remove("dark");
+            }
+          } catch (_) {}
+        }
+        applyTheme();
+        document.addEventListener("astro:after-swap", applyTheme);
       })();
     </script>
 
@@ -113,9 +118,14 @@ const { baseFontSize } = CONFIG.typography;
         define:vars={{ phKey: CONFIG.analytics.posthogKey, phHost: CONFIG.analytics.posthogHost }}
       >
         !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
-        posthog.init(phKey, {api_host: phHost, person_profiles: 'identified_only'});
+        posthog.init(phKey, {api_host: phHost, person_profiles: 'identified_only', capture_pageview: false});
+        document.addEventListener('astro:page-load', function() {
+          posthog.capture('$pageview');
+        });
       </script>
     )}
+
+    <ClientRouter />
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -150,7 +160,7 @@ const { baseFontSize } = CONFIG.typography;
   </head>
   <body class="min-h-screen bg-background font-sans antialiased relative">
     <!-- FlickeringGrid header background - matches template exactly -->
-    <div class="absolute inset-0 top-0 left-0 right-0 h-25 overflow-hidden z-0">
+    <div class="absolute inset-0 top-0 left-0 right-0 h-25 overflow-hidden z-0" transition:persist="flickering-grid">
       <FlickeringGrid
         client:load
         className="h-full w-full"
@@ -169,6 +179,6 @@ const { baseFontSize } = CONFIG.typography;
     </div>
 
     <!-- Navbar: ThemeProvider + TooltipProvider + Navbar all in one React island -->
-    <NavbarIsland client:load />
+    <NavbarIsland client:load transition:persist="navbar" />
   </body>
 </html>
