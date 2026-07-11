@@ -49,42 +49,55 @@ func (r *TagRepo) ListWithCounts(ctx context.Context) ([]model.Tag, error) {
 	return tags, nil
 }
 
+func slugify(name string) string {
+	return strings.ToLower(strings.ReplaceAll(strings.TrimSpace(name), " ", "-"))
+}
+
 func (r *TagRepo) UpsertMany(ctx context.Context, names []string) ([]int, error) {
 	if len(names) == 0 {
 		return []int{}, nil
 	}
 
+	seen := make(map[string]string)
+	dedupedNames := make([]string, 0, len(names))
+	for _, name := range names {
+		slug := slugify(name)
+		if _, exists := seen[slug]; !exists {
+			seen[slug] = strings.TrimSpace(name)
+			dedupedNames = append(dedupedNames, strings.TrimSpace(name))
+		}
+	}
+
 	var sb strings.Builder
 	sb.WriteString(`INSERT INTO tags (name, slug) VALUES `)
-	args := make([]any, 0, len(names)*2)
-	for i, name := range names {
+	args := make([]any, 0, len(dedupedNames)*2)
+	for i, name := range dedupedNames {
 		if i > 0 {
 			sb.WriteString(", ")
 		}
 		sb.WriteString(fmt.Sprintf("($%d, $%d)", i*2+1, i*2+2))
-		slug := strings.ToLower(strings.ReplaceAll(strings.TrimSpace(name), " ", "-"))
-		args = append(args, strings.TrimSpace(name), slug)
+		args = append(args, name, slugify(name))
 	}
-	sb.WriteString(` ON CONFLICT (name) DO NOTHING`)
+	sb.WriteString(` ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name`)
 
 	_, err := r.pool.Exec(ctx, sb.String(), args...)
 	if err != nil {
 		return nil, fmt.Errorf("upsert tags: %w", err)
 	}
 
-	placeholders := make([]string, len(names))
-	selectArgs := make([]any, len(names))
-	for i, name := range names {
-		placeholders[i] = fmt.Sprintf("$%d", i+1)
-		selectArgs[i] = strings.TrimSpace(name)
+	slugs := make([]string, len(dedupedNames))
+	slugArgs := make([]any, len(dedupedNames))
+	for i, name := range dedupedNames {
+		slugs[i] = fmt.Sprintf("$%d", i+1)
+		slugArgs[i] = slugify(name)
 	}
 
 	selectQuery := fmt.Sprintf(
-		`SELECT id FROM tags WHERE name IN (%s) ORDER BY name`,
-		strings.Join(placeholders, ", "),
+		`SELECT id FROM tags WHERE slug IN (%s) ORDER BY slug`,
+		strings.Join(slugs, ", "),
 	)
 
-	rows, err := r.pool.Query(ctx, selectQuery, selectArgs...)
+	rows, err := r.pool.Query(ctx, selectQuery, slugArgs...)
 	if err != nil {
 		return nil, fmt.Errorf("select tag ids: %w", err)
 	}

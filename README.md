@@ -469,7 +469,7 @@ docker compose up -d
 - [ ] Add a newsletter functionality
 - [ ] Cross-post to Medium (REST API integration in sync service)
 - [ ] Cross-post to Substack (RSS feed import or API when available)
-- [ ] Cache the landing page and utilize bf cache when navigating back from blog
+- [X] Cache the landing page and utilize bf cache when navigating back from blog
 - [x] Fix the click on dark mode button
 
 ### DevOps

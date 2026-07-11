@@ -34,7 +34,7 @@ export const DATA = {
   description:
     "Software Engineer building performant backends and full-stack applications. I care about systems that scale and developer experience that doesn't suck.",
   summary:
-    "I'm a software engineer at [Instahyre](https://instahyre.com) where I work on distributed systems, search infrastructure, and backend performance. Before that I built event-driven pipelines and SSR frontends as a [full-stack contractor](/#work). I hold a degree in [Electrical & Electronics Engineering from NMIT Bengaluru](https://nmit.ac.in), have authored [IEEE research papers on Quantum Computing](https://scholar.google.com/citations?user=q3MbjLQAAAAJ&hl=en), and won a [machine learning hackathon](/#achievements). I like working across the stack — from Redis locking to Elasticsearch query parsers to Next.js SPAs.",
+    "I'm a software engineer at [Interview Kickstart](https://interviewkickstart.com) where I work on the payments module. Previously at [Instahyre](https://instahyre.com) where I built distributed systems, search infrastructure, and optimized backend performance. Before that I built event-driven pipelines and SSR frontends as a [full-stack contractor](/#work). I hold a degree in [Electrical & Electronics Engineering from NMIT Bengaluru](https://nmit.ac.in), have authored [IEEE research papers on Quantum Computing](https://scholar.google.com/citations?user=q3MbjLQAAAAJ&hl=en), and won a [machine learning hackathon](/#achievements). I like working across the stack — from Redis locking to Elasticsearch query parsers to Next.js SPAs.",
   avatarUrl: "/avatar.jpg",
   ogImage: "/og_image.png",
   sections: {
@@ -131,6 +131,19 @@ export const DATA = {
 
   work: [
     {
+      company: "Interview Kickstart",
+      href: "https://interviewkickstart.com",
+      badges: [],
+      location: "Bengaluru, India",
+      title: "SDE-1",
+      logoUrl: "https://www.google.com/s2/favicons?domain=interviewkickstart.com&sz=128",
+      start: "June 2026",
+      end: undefined,
+      bullets: [
+        "Working on the payments module",
+      ],
+    },
+    {
       company: "Instahyre",
       href: "https://instahyre.com",
       badges: [],
@@ -138,7 +151,7 @@ export const DATA = {
       title: "SDE-1",
       logoUrl: "https://www.google.com/s2/favicons?domain=instahyre.com&sz=128",
       start: "December 2024",
-      end: undefined,
+      end: "May 2026",
       bullets: [
         "Designed Redis-based distributed locking (SETNX + TTL) to eliminate double-booking under concurrent traffic",
         "Reduced API latency by 80% (p75: 600ms → 120ms) by profiling slow PostgreSQL queries and optimizing payloads",
