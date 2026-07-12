@@ -27,8 +27,8 @@ test:frontend:
   stage: test
   image: node:22-alpine
   before_script:
-    - corepack enable && corepack prepare pnpm@latest --activate
-    - cd web && pnpm install --frozen-lockfile
+    - corepack enable && corepack prepare pnpm@11.1.2 --activate
+    - cd web && pnpm install --frozen-lockfile --ignore-scripts && pnpm rebuild esbuild
   script:
     - pnpm build
   rules:
@@ -36,7 +36,7 @@ test:frontend:
         - web/**/*
 
 # --------------------------------------------------------------------------
-# Build stage — backend Docker image
+# Build stage — Docker images
 # --------------------------------------------------------------------------
 
 build:backend:
@@ -54,11 +54,33 @@ build:backend:
       changes:
         - backend/**/*
 
+build:frontend:
+  stage: build
+  image: docker:27
+  services:
+    - docker:27-dind
+  script:
+    - >
+      docker build
+      --build-arg PUBLIC_API_URL=https://api.shashwatdixit.com
+      --build-arg PUBLIC_POSTHOG_KEY=${PUBLIC_POSTHOG_KEY:-}
+      --build-arg PUBLIC_POSTHOG_HOST=${PUBLIC_POSTHOG_HOST:-https://us.i.posthog.com}
+      -t $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA
+      -t $CI_REGISTRY_IMAGE/frontend:latest
+      ./web
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA
+    - docker push $CI_REGISTRY_IMAGE/frontend:latest
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - web/**/*
+
 # --------------------------------------------------------------------------
-# Deploy stage
+# Deploy stage — SSH to EC2 and update services
 # --------------------------------------------------------------------------
 
-deploy:backend:
+deploy:
   stage: deploy
   image: alpine:latest
   before_script:
@@ -71,41 +93,19 @@ deploy:backend:
     - |
       ssh $DEPLOY_USER@$DEPLOY_HOST << 'EOF'
         cd ~/portfolio
+        git pull origin main
         docker compose pull
-        docker compose up -d --remove-orphans
+        docker compose up -d --build --remove-orphans
         docker image prune -f
       EOF
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes:
-        - backend/**/*
-        - docker-compose.yml
-        - Caddyfile
-  environment:
-    name: production
-    url: https://api.shashwatdixit.com
-
-deploy:frontend:
-  stage: deploy
-  image: node:22-alpine
-  before_script:
-    - corepack enable && corepack prepare pnpm@latest --activate
-    - cd web && pnpm install --frozen-lockfile
-    - npx wrangler --version
-  script:
-    - cd web
-    - pnpm build
-    - npx wrangler pages deploy dist/client --project-name=portfolio
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes:
-        - web/**/*
   environment:
     name: production
     url: https://shashwatdixit.com
 
 # --------------------------------------------------------------------------
-# Sync stage — trigger blog content sync after backend deploy
+# Sync stage — trigger blog content sync after deploy
 # --------------------------------------------------------------------------
 
 trigger:sync:
@@ -117,11 +117,11 @@ trigger:sync:
     - |
       curl -sf -X POST \
         -H "X-API-Key: $SYNC_API_KEY" \
-        "${SITE_URL:-https://api.shashwatdixit.com}/api/sync"
+        "https://api.shashwatdixit.com/api/sync"
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   needs:
-    - deploy:backend
+    - deploy
   allow_failure: true
 
 # --------------------------------------------------------------------------
@@ -138,6 +138,6 @@ scheduled:sync:
     - |
       curl -sf -X POST \
         -H "X-API-Key: $SYNC_API_KEY" \
-        "${SITE_URL:-https://api.shashwatdixit.com}/api/sync"
+        "https://api.shashwatdixit.com/api/sync"
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"

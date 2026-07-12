@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@astrojs/react';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
-import cloudflare from '@astrojs/cloudflare';
+import node from '@astrojs/node';
 import remarkGfm from 'remark-gfm';
 import rehypePrettyCode from 'rehype-pretty-code';
 import { remarkCodeMeta } from './src/lib/remark-code-meta.ts';
@@ -23,7 +23,7 @@ const prettyCodeOptions = {
 export default defineConfig({
   site: CONFIG.site.url,
   output: 'server',
-  adapter: cloudflare(),
+  adapter: node({ mode: 'standalone' }),
 
   vite: {
     plugins: [tailwindcss()],

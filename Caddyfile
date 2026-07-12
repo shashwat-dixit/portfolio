@@ -2,6 +2,10 @@
 	email shashwatmain@gmail.com
 }
 
+shashwatdixit.com {
+	reverse_proxy frontend:4321
+}
+
 api.shashwatdixit.com {
 	reverse_proxy backend:8080
 }
