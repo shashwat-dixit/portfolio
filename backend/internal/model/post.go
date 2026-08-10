@@ -7,7 +7,7 @@ type Post struct {
 	Slug        string     `json:"slug"`
 	Title       string     `json:"title"`
 	Description string     `json:"description"`
-	ContentMD   string     `json:"-"`
+	ContentMD   string     `json:"contentMd,omitempty"`
 	ContentHTML string     `json:"contentHtml,omitempty"`
 	CoverImage  string     `json:"cover,omitempty"`
 	Status      string     `json:"status"`

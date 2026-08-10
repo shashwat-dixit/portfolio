@@ -107,7 +107,7 @@ func (r *PostRepo) ListPublished(ctx context.Context, tag string, page, limit in
 
 func (r *PostRepo) GetBySlug(ctx context.Context, slug string) (*model.Post, []string, error) {
 	query := `
-		SELECT id, slug, title, description, content_html, cover_image, status,
+		SELECT id, slug, title, description, content_md, content_html, cover_image, status,
 			reading_time, author, published_at, updated_at
 		FROM posts
 		WHERE slug = $1 AND status = 'published'`
@@ -115,7 +115,7 @@ func (r *PostRepo) GetBySlug(ctx context.Context, slug string) (*model.Post, []s
 	var post model.Post
 	err := r.pool.QueryRow(ctx, query, slug).Scan(
 		&post.ID, &post.Slug, &post.Title, &post.Description,
-		&post.ContentHTML, &post.CoverImage, &post.Status,
+		&post.ContentMD, &post.ContentHTML, &post.CoverImage, &post.Status,
 		&post.ReadingTime, &post.Author, &post.PublishedAt, &post.UpdatedAt,
 	)
 	if err == pgx.ErrNoRows {

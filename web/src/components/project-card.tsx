@@ -1,7 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { Badge } from "@/components/ui/badge";
+import { ProjectShareButton } from "@/components/project-share-button";
 import { cn } from "@/lib/utils";
+import { getGithubUrlFromLinks } from "@/lib/share";
 import { ArrowUpRight } from "lucide-react";
 import { useState } from "react";
 import Markdown from "react-markdown";
@@ -50,6 +52,8 @@ export function ProjectCard({
   links,
   className,
 }: Props) {
+  const githubUrl = getGithubUrlFromLinks(links);
+
   return (
     <div
       className={cn(
@@ -79,27 +83,31 @@ export function ProjectCard({
             <div className="w-full h-48 bg-muted" />
           )}
         </a>
-        {links && links.length > 0 && (
-          <div className="absolute top-2 right-2 flex flex-wrap gap-2">
-            {links.map((link, idx) => (
-              <a
-                href={link.href}
-                key={idx}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e: React.MouseEvent) => e.stopPropagation()}
+        <div className="absolute top-2 right-2 flex flex-wrap justify-end gap-2">
+          <ProjectShareButton
+            title={title}
+            description={description}
+            websiteUrl={href}
+            githubUrl={githubUrl}
+          />
+          {links?.map((link, idx) => (
+            <a
+              href={link.href}
+              key={idx}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
+            >
+              <Badge
+                className="flex items-center gap-1.5 text-xs bg-black text-white hover:bg-black/90"
+                variant="default"
               >
-                <Badge
-                  className="flex items-center gap-1.5 text-xs bg-black text-white hover:bg-black/90"
-                  variant="default"
-                >
-                  {link.icon}
-                  {link.type}
-                </Badge>
-              </a>
-            ))}
-          </div>
-        )}
+                {link.icon}
+                {link.type}
+              </Badge>
+            </a>
+          ))}
+        </div>
       </div>
       <div className="p-6 flex flex-col gap-3 flex-1">
         <div className="flex items-start justify-between gap-2">

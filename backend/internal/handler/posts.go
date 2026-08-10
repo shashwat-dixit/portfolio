@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"gitlab.com/shashwat-dixit/portfolio/backend/internal/service"
@@ -60,11 +61,21 @@ func (h *PostHandler) GetBySlug(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800")
+
+	// Agents can request raw markdown via Accept: text/markdown or ?format=md
+	if wantsMarkdown(r) {
+		w.Header().Set("Content-Type", "text/markdown; charset=utf-8")
+		w.Write([]byte(post.ContentMD))
+		return
+	}
+
 	resp := map[string]any{
 		"slug":        post.Slug,
 		"title":       post.Title,
 		"description": post.Description,
 		"contentHtml": post.ContentHTML,
+		"contentMd":   post.ContentMD,
 		"tags":        tags,
 		"date":        post.PublishedAt,
 		"updated":     post.UpdatedAt,
@@ -74,6 +85,23 @@ func (h *PostHandler) GetBySlug(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800")
 	json.NewEncoder(w).Encode(resp)
+}
+
+func wantsMarkdown(r *http.Request) bool {
+	if r.URL.Query().Get("format") == "md" {
+		return true
+	}
+	accept := r.Header.Get("Accept")
+	if accept == "" {
+		return false
+	}
+	// Prefer markdown only when it is explicitly requested (and not part of */*).
+	for _, part := range strings.Split(accept, ",") {
+		mediaType := strings.TrimSpace(strings.SplitN(part, ";", 2)[0])
+		if mediaType == "text/markdown" || mediaType == "text/x-markdown" {
+			return true
+		}
+	}
+	return false
 }

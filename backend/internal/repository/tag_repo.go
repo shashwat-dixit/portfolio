@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"unicode"
 
 	"gitlab.com/shashwat-dixit/portfolio/backend/internal/model"
 
@@ -53,6 +54,17 @@ func slugify(name string) string {
 	return strings.ToLower(strings.ReplaceAll(strings.TrimSpace(name), " ", "-"))
 }
 
+// capitalizeTagName ensures the display name always starts with an uppercase letter.
+func capitalizeTagName(name string) string {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return name
+	}
+	runes := []rune(name)
+	runes[0] = unicode.ToUpper(runes[0])
+	return string(runes)
+}
+
 func (r *TagRepo) UpsertMany(ctx context.Context, names []string) ([]int, error) {
 	if len(names) == 0 {
 		return []int{}, nil
@@ -61,11 +73,18 @@ func (r *TagRepo) UpsertMany(ctx context.Context, names []string) ([]int, error)
 	seen := make(map[string]string)
 	dedupedNames := make([]string, 0, len(names))
 	for _, name := range names {
-		slug := slugify(name)
-		if _, exists := seen[slug]; !exists {
-			seen[slug] = strings.TrimSpace(name)
-			dedupedNames = append(dedupedNames, strings.TrimSpace(name))
+		displayName := capitalizeTagName(name)
+		if displayName == "" {
+			continue
 		}
+		slug := slugify(displayName)
+		if _, exists := seen[slug]; !exists {
+			seen[slug] = displayName
+			dedupedNames = append(dedupedNames, displayName)
+		}
+	}
+	if len(dedupedNames) == 0 {
+		return []int{}, nil
 	}
 
 	var sb strings.Builder

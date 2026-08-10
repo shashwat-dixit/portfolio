@@ -11,16 +11,20 @@ if (!tag) {
   return Astro.redirect("/blog");
 }
 
-const page = Number(Astro.url.searchParams.get("page")) || 1;
 const limit = CONFIG.blog.postsPerPage;
 
 let posts: any[] = [];
-let pagination = { page: 1, limit, total: 0, totalPages: 0 };
+let pagination: { page: number; limit: number; total: number; totalPages: number } = {
+  page: 1,
+  limit,
+  total: 0,
+  totalPages: 0,
+};
 let tags: any[] = [];
 
 try {
   const [postsResp, tagsResp] = await Promise.all([
-    getPosts({ page, limit, tag, includeDrafts: true }),
+    getPosts({ page: 1, limit, tag, includeDrafts: true }),
     getTags(),
   ]);
   posts = postsResp.posts;
@@ -64,6 +68,7 @@ const tagName = tags.find(t => t.slug === tag)?.name || tag;
         hasPreviousPage: pagination.page > 1,
       }}
       pageSize={limit}
+      tag={tag}
     />
   </div>
 </Layout>

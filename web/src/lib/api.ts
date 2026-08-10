@@ -18,6 +18,7 @@ export interface Post {
   title: string;
   description: string;
   contentHtml: string;
+  contentMd?: string;
   tags: string[];
   date: string;
   updated: string;

@@ -24,7 +24,8 @@ func New(client *redis.Client) *RedisCache {
 // Key builders
 
 func PostKey(slug string) string {
-	return fmt.Sprintf("%spost:%s", KeyPrefix, slug)
+	// v2 includes contentMd in the cached post payload
+	return fmt.Sprintf("%spost:v2:%s", KeyPrefix, slug)
 }
 
 func PostListKey(tag string, page, limit int) string {
