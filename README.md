@@ -404,14 +404,18 @@ docker compose up -d
 
 ### GitHub Actions (push to `main`)
 
-Pushes to `main` run `.github/workflows/deploy.yml`:
+Pushes to `main` run `.github/workflows/deploy.yml`. After tests pass, GitHub Actions SSHs into the existing EC2 host and runs the same commands you run by hand:
 
-1. Test the Go backend (`go vet`, `go build`) and Astro frontend (`pnpm build`)
-2. SSH to the EC2 host, fast-forward `~/portfolio` from this GitHub repo, then `docker compose up -d --build`
-3. Hit `GET /api/health` until the API is up
-4. Trigger `POST /api/sync` to refresh blog content
+```bash
+cd ~/portfolio
+git pull origin main
+docker compose pull
+docker compose up -d --build --remove-orphans
+```
 
-A weekly scheduled run (Tuesday 9:00 AM IST) only triggers the sync. You can also run the workflow manually from the Actions tab.
+No new AWS services, no container registry, and no extra instance. App images still build on the EC2 box you already pay for. GitHub Actions minutes are free on this public repository.
+
+Then it hits `GET /api/health` and triggers `POST /api/sync`. A weekly scheduled run (Tuesday 9:00 AM IST) only syncs blog content. You can also run the workflow from the Actions tab.
 
 Add these repository secrets under **Settings → Secrets and variables → Actions**:
 
@@ -423,7 +427,7 @@ Add these repository secrets under **Settings → Secrets and variables → Acti
 | `DEPLOY_HOST` | EC2 hostname or IP |
 | `SYNC_API_KEY` | Same value as `SYNC_API_KEY` on the server |
 
-The EC2 clone should live at `~/portfolio` and already have Docker Compose and a working `.env`. The deploy job fetches from GitHub, so the server remote does not need to stay pointed at GitLab.
+The EC2 clone should live at `~/portfolio` with Docker Compose and a working `.env`. Leave the GitHub `production` environment without required reviewers so deploys stay automatic.
 
 ## TODO
 

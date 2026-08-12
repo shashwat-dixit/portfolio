@@ -92,8 +92,8 @@ jobs:
           ssh -o StrictHostKeyChecking=yes "$DEPLOY_USER@$DEPLOY_HOST" bash -s << 'EOF'
           set -euo pipefail
           cd ~/portfolio
-          git fetch https://github.com/shashwat-dixit/portfolio.git main
-          git merge --ff-only FETCH_HEAD
+          git remote set-url origin https://github.com/shashwat-dixit/portfolio.git
+          git pull origin main
           docker compose pull
           docker compose up -d --build --remove-orphans
           docker image prune -f
