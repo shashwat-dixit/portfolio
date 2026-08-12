@@ -27,7 +27,7 @@ func NewMarkdown() *MarkdownService {
 			extension.GFM,
 			extension.Typographer,
 			highlighting.NewHighlighting(
-				highlighting.WithStyle("github"),
+				highlighting.WithStyle("dracula"),
 				highlighting.WithFormatOptions(
 					chromahtml.WithClasses(true),
 				),

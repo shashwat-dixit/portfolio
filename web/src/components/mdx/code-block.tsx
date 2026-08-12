@@ -34,7 +34,7 @@ export function CodeBlock({ children, ...props }: CodeBlockProps) {
         variant="outline"
         size="icon"
         className={cn(
-          "absolute size-8 text-primary cursor-pointer right-3 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity rounded-md border border-border shadow-none",
+          "absolute size-8 cursor-pointer right-3 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity rounded-md border border-[#6272a4]/60 bg-[#282a36] text-[#f8f8f2] shadow-none hover:bg-[#44475a] hover:text-[#f8f8f2]",
           title ? "top-13" : "top-3"
         )}
         aria-label="Copy code"
