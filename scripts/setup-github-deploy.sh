@@ -2,6 +2,10 @@
 # Create a deploy-only SSH key and install it on the EC2 host you already SSH into.
 # Prints the values to paste into GitHub. Does not upload anything to GitHub.
 #
+# If you do not have the laptop you usually SSH from, skip this script. Open
+# AWS → EC2 → Connect → EC2 Instance Connect and run the commands in the README
+# section "If you do not have the PC you SSH from".
+#
 # Usage:
 #   ./scripts/setup-github-deploy.sh ubuntu@YOUR_EC2_HOST
 set -euo pipefail

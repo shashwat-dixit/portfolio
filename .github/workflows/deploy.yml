@@ -4,7 +4,7 @@
 # the existing EC2 host — no extra AWS services or registry.
 #
 # Required (create these once — see README "If you do not have these yet"):
-#   Secret  SSH_PRIVATE_KEY — deploy key (generate with scripts/setup-github-deploy.sh)
+#   Secret  SSH_PRIVATE_KEY — fresh deploy key (EC2 Instance Connect or setup script)
 #   Variable DEPLOY_USER    — SSH user, e.g. ubuntu
 #   Variable DEPLOY_HOST    — EC2 hostname or IP
 # Optional:

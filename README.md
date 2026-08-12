@@ -433,7 +433,32 @@ Add them under **Settings → Secrets and variables → Actions**. Put `DEPLOY_U
 
 Open the GitLab project → **Settings → CI/CD → Variables**. Copy `SSH_PRIVATE_KEY`, `DEPLOY_USER`, `DEPLOY_HOST`, and `SYNC_API_KEY` into GitHub. You can skip `SSH_KNOWN_HOSTS`.
 
-#### If you only SSH in by hand
+#### If you do not have the PC you SSH from
+
+Yes — generate a **fresh** deploy key. You do not need the old laptop or the old key. Do this in the AWS browser so the public half is installed on the instance immediately:
+
+1. AWS Console → **EC2 → Instances** → select the portfolio box → **Connect** → **EC2 Instance Connect** → Connect. (Session Manager works too if you use it.)
+2. In that browser terminal, paste:
+
+```bash
+ssh-keygen -t ed25519 -C "github-actions-deploy" -f /tmp/github-deploy -N ""
+mkdir -p ~/.ssh && chmod 700 ~/.ssh
+cat /tmp/github-deploy.pub >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+echo "----- copy everything below into GitHub secret SSH_PRIVATE_KEY -----"
+cat /tmp/github-deploy
+echo "----- end of key -----"
+rm -f /tmp/github-deploy /tmp/github-deploy.pub
+```
+
+3. Copy the block including `BEGIN OPENSSH PRIVATE KEY` / `END OPENSSH PRIVATE KEY` (or `BEGIN`/`END RSA`). GitHub → **Settings → Secrets and variables → Actions → Secrets** → New → name `SSH_PRIVATE_KEY` → paste → Save.
+4. On the same instance, note the user (`whoami`, usually `ubuntu`) and the public IP from the EC2 page. Add those as GitHub **variables** `DEPLOY_USER` and `DEPLOY_HOST`.
+
+Creating a new key pair under EC2 → **Key pairs** is not enough: that file is only attached when an instance is launched, not added to a box that is already running.
+
+Do not commit the private key or paste it into chat. After you save it in GitHub, you can close the Instance Connect tab.
+
+#### If you only SSH in by hand (from a laptop)
 
 On your laptop, run the helper with the same `user@host` you already type:
 
