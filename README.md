@@ -459,6 +459,7 @@ docker compose up -d
 - [x] Remove placeholder .mdx blog posts from `src/content/blog/`
 - [x] Remove `content.config.ts` (content collections no longer needed)
 - [x] Convert project grid into carousel
+- [x] Replace project carousel with a numbered case-study list
 - [x] Remove the achievements section instead use that timeline to show the current work experience
 - [x] Display Draft Blogs as Coming Soon
 - [X] Render the headings and subheading as a table of content on the left side
