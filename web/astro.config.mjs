@@ -13,8 +13,8 @@ import { CONFIG } from './src/data/config.ts';
 /** @type {import('rehype-pretty-code').Options} */
 const prettyCodeOptions = {
   theme: {
-    light: 'github-light',
-    dark: 'github-dark',
+    light: 'dracula',
+    dark: 'dracula',
   },
   keepBackground: false,
 };
