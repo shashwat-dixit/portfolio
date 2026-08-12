@@ -65,7 +65,7 @@ export function Timeline({
       data-orientation={orientation}
       className={cn(
         "group relative [--timeline-gap:2rem]",
-        orientation === "vertical" && "flex flex-col gap-4 p-4 w-full",
+        orientation === "vertical" && "flex flex-col gap-4 p-0 sm:p-4 w-full",
         orientation === "horizontal" && "flex flex-row gap-4 p-4 h-full",
         className
       )}

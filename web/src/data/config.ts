@@ -20,7 +20,7 @@ export const CONFIG = {
   site: {
     url: "https://shashwatdixit.com",
     locale: "en_US",
-    twitterHandle: "@shashwatdev",
+    twitterHandle: "@shashwatmain",
   },
 
   // ---------------------------------------------------------------------------
