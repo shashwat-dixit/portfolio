@@ -53,9 +53,9 @@ export default function WorkTimelineSection() {
                 ))}
               </ul>
             </div>
-            <ul className="col-span-2 space-y-3 border-l border-border pl-4 text-sm leading-relaxed text-muted-foreground sm:hidden">
+            <ul className="col-span-2 list-disc space-y-3 pl-5 text-sm leading-relaxed text-muted-foreground marker:text-muted-foreground/70 sm:hidden">
               {job.bullets.map((bullet, idx) => (
-                <li key={idx} className="text-pretty">
+                <li key={idx} className="pl-1 text-pretty">
                   {bullet}
                 </li>
               ))}
