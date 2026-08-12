@@ -35,11 +35,11 @@ export const DATA = {
   description:
     "Software Engineer building performant backends and full-stack applications. I care about systems that scale and developer experience that doesn't suck.",
   summary:
-    "I'm a software engineer at [Interview Kickstart](https://interviewkickstart.com) where I work on the payments module. Previously at [Instahyre](https://instahyre.com) where I built distributed systems, search infrastructure, and optimized backend performance. Before that I built event-driven pipelines and SSR frontends as a [full-stack contractor](/#work). I hold a degree in [Electrical & Electronics Engineering from NMIT Bengaluru](https://nmit.ac.in), have authored [IEEE research papers on Quantum Computing](https://scholar.google.com/citations?user=q3MbjLQAAAAJ&hl=en), and won a [machine learning hackathon](/#achievements). I like working across the stack — from Redis locking to Elasticsearch query parsers to Next.js SPAs.",
+    "I'm a software engineer at [Interview Kickstart](https://interviewkickstart.com) working on payments — gateway integrations, installment billing, and the flow that grants learners access after they pay. Previously at [Instahyre](https://instahyre.com) I built distributed systems, search infrastructure, and optimized backend performance. Before that I built event-driven pipelines and SSR frontends as a [full-stack contractor](/#work). I hold a degree in [Electrical & Electronics Engineering from NMIT Bengaluru](https://nmit.ac.in) and have authored [IEEE research papers on Quantum Computing](https://scholar.google.com/citations?user=q3MbjLQAAAAJ&hl=en). I like working across the stack — from Redis locking to Elasticsearch query parsers to Next.js SPAs.",
   avatarUrl: "/avatar.jpg",
   ogImage: "/og_image.png",
   sections: {
-    about: { order: 1, enabled: true, heading: "About" },
+    about: { order: 1, enabled: true, heading: "About", label: "About" },
     work: {
       order: 2, enabled: true,
       label: "Experience",
@@ -142,11 +142,11 @@ export const DATA = {
       start: "June 2026",
       end: undefined,
       bullets: [
-        "Fixed 5 defects in a third-party payment gateway by auditing it against the live API response format, stopping every real transaction from silently falling back to a backup provider",
-        "Eliminated silent payment-validation failures on installment payments by fixing a double-counting bug in balance-calculation logic, unblocking legitimate transactions that were being falsely rejected",
-        "Designed a feature-flagged rollback for a full payment-flow rewrite, running old and new systems side-by-side so the rollout could be reverted instantly",
-        "Cut learner activation delay by replacing a disbursement-dependent access trigger with a completion-based one, plus a 30-day window to auto-revoke access if payment was never confirmed",
-        "Reduced error-monitoring noise by ~30% by distinguishing expected no-op states from genuine failures, and added reference-ID logging for faster debugging of real failures",
+        "Fixed 5 payment-gateway defects against the live API format, stopping real transactions from silently falling back to a backup provider",
+        "Fixed a double-counting bug in installment balance logic that was silently rejecting valid payments",
+        "Shipped a feature-flagged payment-flow rewrite with old and new systems running side-by-side for instant rollback",
+        "Cut learner activation delay by granting access on payment completion, with a 30-day auto-revoke if payment is never confirmed",
+        "Cut error-monitoring noise by ~30% by filtering expected no-ops, and added reference-ID logging for faster debugging",
       ],
     },
     {
