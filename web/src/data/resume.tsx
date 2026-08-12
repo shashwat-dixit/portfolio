@@ -118,7 +118,7 @@ export const DATA = {
       },
       Twitter: {
         name: "X",
-        url: "https://x.com/shashwatdev",
+        url: "https://x.com/shashwatmain",
         icon: Icons.x,
         navbar: true,
       },
