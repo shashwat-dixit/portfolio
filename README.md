@@ -247,11 +247,7 @@ POST /api/sync (protected by X-API-Key)
   └─ 6. Return sync summary
 ```
 
-Automated via cron (Tuesday 9:00 AM IST / 3:30 AM UTC):
-
-```
-30 3 * * 2 curl -X POST -H "X-API-Key: $SYNC_KEY" https://api.shashwatdixit.com/api/sync
-```
+Automated via GitHub Actions (Tuesday 9:00 AM IST / 3:30 AM UTC) in `.github/workflows/deploy.yml`.
 
 ## Request Flow
 
@@ -385,7 +381,7 @@ docker compose up -d
 
 1. Write markdown in GitLab repo (`status: writing`)
 2. When ready: set `status: published`, set `date`, commit and push
-3. Tuesday 9 AM IST: cron triggers `POST /api/sync`
+3. Tuesday 9 AM IST: GitHub Actions triggers `POST /api/sync`
 4. Backend syncs: pulls repo, parses, upserts DB, flushes Redis cache
 5. Blog is live immediately (Astro SSR fetches fresh data)
 
@@ -405,6 +401,92 @@ docker compose up -d
 │  All services via docker-compose                 │
 └─────────────────────────────────────────────────┘
 ```
+
+### GitHub Actions (push to `main`)
+
+Pushes to `main` run `.github/workflows/deploy.yml`. After tests pass, GitHub Actions SSHs into the existing EC2 host and runs the same commands you run by hand:
+
+```bash
+cd ~/portfolio
+git pull origin main
+docker compose pull
+docker compose up -d --build --remove-orphans
+```
+
+No new AWS services, no container registry, and no extra instance. App images still build on the EC2 box you already pay for. GitHub Actions minutes are free on this public repository.
+
+Then it hits `GET /api/health` and triggers `POST /api/sync`. A weekly scheduled run (Tuesday 9:00 AM IST) only syncs blog content. You can also run the workflow from the Actions tab.
+
+These values are **not in this repository**. They come from the SSH login you already use, or you create them once.
+
+| Name | Where it lives | Required? |
+| --- | --- | --- |
+| `DEPLOY_USER` | The user in `ssh USER@HOST` (often `ubuntu` or `ec2-user`) | Yes — GitHub **variable** |
+| `DEPLOY_HOST` | The host in `ssh USER@HOST`, or EC2 → Instances → Public IPv4 | Yes — GitHub **variable** |
+| `SSH_PRIVATE_KEY` | A new deploy key you generate (not something AWS emails you) | Yes — GitHub **secret** |
+| `SSH_KNOWN_HOSTS` | Output of `ssh-keyscan -H HOST` | No — the workflow scans if omitted |
+| `SYNC_API_KEY` | `SYNC_API_KEY=...` in `~/portfolio/.env` on the server | No — deploy still runs; blog sync is skipped |
+
+Add them under **Settings → Secrets and variables → Actions**. Put `DEPLOY_USER` and `DEPLOY_HOST` on the **Variables** tab (they are not secret). Put keys on the **Secrets** tab.
+
+#### If GitLab CI already deployed this site
+
+Open the GitLab project → **Settings → CI/CD → Variables**. Copy `SSH_PRIVATE_KEY`, `DEPLOY_USER`, `DEPLOY_HOST`, and `SYNC_API_KEY` into GitHub. You can skip `SSH_KNOWN_HOSTS`.
+
+#### If you do not have the PC you SSH from
+
+Yes — generate a **fresh** deploy key. You do not need the old laptop or the old key. Do this in the AWS browser so the public half is installed on the instance immediately:
+
+1. AWS Console → **EC2 → Instances** → select the portfolio box → **Connect** → **EC2 Instance Connect** → Connect. (Session Manager works too if you use it.)
+2. In that browser terminal, paste:
+
+```bash
+ssh-keygen -t ed25519 -C "github-actions-deploy" -f /tmp/github-deploy -N ""
+mkdir -p ~/.ssh && chmod 700 ~/.ssh
+cat /tmp/github-deploy.pub >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+echo "----- copy everything below into GitHub secret SSH_PRIVATE_KEY -----"
+cat /tmp/github-deploy
+echo "----- end of key -----"
+rm -f /tmp/github-deploy /tmp/github-deploy.pub
+```
+
+3. Copy the block including `BEGIN OPENSSH PRIVATE KEY` / `END OPENSSH PRIVATE KEY` (or `BEGIN`/`END RSA`). GitHub → **Settings → Secrets and variables → Actions → Secrets** → New → name `SSH_PRIVATE_KEY` → paste → Save.
+4. On the same instance, note the user (`whoami`, usually `ubuntu`) and the public IP from the EC2 page. Add those as GitHub **variables** `DEPLOY_USER` and `DEPLOY_HOST`.
+
+Creating a new key pair under EC2 → **Key pairs** is not enough: that file is only attached when an instance is launched, not added to a box that is already running.
+
+Do not commit the private key or paste it into chat. After you save it in GitHub, you can close the Instance Connect tab.
+
+#### If you only SSH in by hand (from a laptop)
+
+On your laptop, run the helper with the same `user@host` you already type:
+
+```bash
+./scripts/setup-github-deploy.sh ubuntu@YOUR_EC2_HOST
+```
+
+That creates `~/.ssh/portfolio-github-deploy`, installs the public half on the instance, and prints what to paste into GitHub. Manual equivalent:
+
+```bash
+ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/portfolio-github-deploy -N ""
+ssh-copy-id -i ~/.ssh/portfolio-github-deploy.pub ubuntu@YOUR_EC2_HOST
+cat ~/.ssh/portfolio-github-deploy   # paste the full PEM, including BEGIN/END lines, as SSH_PRIVATE_KEY
+```
+
+Use the **private** key (`portfolio-github-deploy`), not the `.pub` file. Do not commit it or paste it into chat.
+
+Forgot the host? AWS Console → **EC2 → Instances** → select the box → **Public IPv4 address** (or the Elastic IP). Forgot the user? Ubuntu AMIs use `ubuntu`; Amazon Linux uses `ec2-user`.
+
+Forgot `SYNC_API_KEY`? After you can SSH in:
+
+```bash
+grep SYNC_API_KEY ~/portfolio/.env
+```
+
+The EC2 security group must allow inbound **TCP 22** from the internet (or at least from GitHub). If SSH is locked to your home IP only, GitHub Actions cannot connect.
+
+The clone on the box should already be at `~/portfolio` with Docker Compose and a working `.env`. Leave the GitHub `production` environment without required reviewers so deploys stay automatic.
 
 ## TODO
 
@@ -477,6 +559,6 @@ docker compose up -d
 
 - [x] `docker-compose.yml` — Go backend, Astro, PostgreSQL, Redis
 - [x] Caddy / Nginx reverse proxy config
-- [x] Option To Trigger Deploy and Trigger Gitlab Repo Pull (via POST /api/sync + GitLab CI)
-- [x] Cron job for weekly sync (GitLab scheduled pipeline)
-- [x] CI/CD pipeline (GitLab CI)
+- [x] Option To Trigger Deploy and Trigger Gitlab Repo Pull (via POST /api/sync + GitHub Actions)
+- [x] Cron job for weekly sync (GitHub Actions schedule)
+- [x] CI/CD pipeline (GitHub Actions on `main`, GitLab CI retained as a mirror)

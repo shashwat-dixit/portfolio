@@ -1,0 +1,148 @@
+# Automates the EC2 deploy you currently run by hand:
+#   git pull origin main && docker compose pull && docker compose up -d --build
+# Uses free GitHub Actions minutes on this public repo. Builds still happen on
+# the existing EC2 host — no extra AWS services or registry.
+#
+# Required (create these once — see README "If you do not have these yet"):
+#   Secret  SSH_PRIVATE_KEY — fresh deploy key (EC2 Instance Connect or setup script)
+#   Variable DEPLOY_USER    — SSH user, e.g. ubuntu
+#   Variable DEPLOY_HOST    — EC2 hostname or IP
+# Optional:
+#   Secret SSH_KNOWN_HOSTS  — if unset, the job runs ssh-keyscan
+#   Secret SYNC_API_KEY     — if unset, blog sync is skipped
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Tuesday 9:00 AM IST / 3:30 AM UTC — weekly blog content sync
+    - cron: "30 3 * * 2"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  test-backend:
+    name: Test backend
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - run: go vet ./...
+      - run: go build ./...
+
+  test-frontend:
+    name: Test frontend
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.1.2
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm rebuild esbuild
+      - run: pnpm build
+        env:
+          PUBLIC_API_URL: https://api.shashwatdixit.com
+
+  deploy:
+    name: Deploy production
+    needs: [test-backend, test-frontend]
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://shashwatdixit.com
+    steps:
+      - name: Deploy over SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER || secrets.DEPLOY_USER }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST || secrets.DEPLOY_HOST }}
+        run: |
+          set -euo pipefail
+          : "${SSH_PRIVATE_KEY:?Set the SSH_PRIVATE_KEY repository secret}"
+          : "${DEPLOY_USER:?Set the DEPLOY_USER repository variable}"
+          : "${DEPLOY_HOST:?Set the DEPLOY_HOST repository variable}"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          eval "$(ssh-agent -s)"
+          printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+          if [ -n "${SSH_KNOWN_HOSTS}" ]; then
+            printf '%s\n' "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+          else
+            ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+          fi
+          chmod 644 ~/.ssh/known_hosts
+          ssh -o StrictHostKeyChecking=yes "$DEPLOY_USER@$DEPLOY_HOST" bash -s << 'EOF'
+          set -euo pipefail
+          cd ~/portfolio
+          git remote set-url origin https://github.com/shashwat-dixit/portfolio.git
+          git pull origin main
+          docker compose pull
+          docker compose up -d --build --remove-orphans
+          docker image prune -f
+          EOF
+      - name: Verify API health
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4 5 6 7 8; do
+            if curl -sf https://api.shashwatdixit.com/api/health; then
+              echo "Health check passed"
+              exit 0
+            fi
+            echo "Waiting for API (attempt ${i})..."
+            sleep 5
+          done
+          echo "Health check failed"
+          exit 1
+
+  sync:
+    name: Sync blog content
+    needs: [deploy]
+    if: |
+      always() &&
+      !cancelled() &&
+      (
+        github.event_name == 'schedule' ||
+        needs.deploy.result == 'success'
+      )
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Trigger POST /api/sync
+        env:
+          SYNC_API_KEY: ${{ secrets.SYNC_API_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SYNC_API_KEY}" ]; then
+            echo "SYNC_API_KEY is not set; skipping blog sync."
+            exit 0
+          fi
+          curl -sf -X POST \
+            -H "X-API-Key: ${SYNC_API_KEY}" \
+            "https://api.shashwatdixit.com/api/sync"
