@@ -124,6 +124,24 @@
     @apply bg-background text-foreground;
   }
 
+  /* Keep blog/markdown content inside the viewport on small screens.
+     Wide tables, code, images, and long tokens otherwise expand the page
+     because the article is a flex column (min-width: auto). */
+  .prose {
+    overflow-wrap: anywhere;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .prose :where(img, video) {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .prose :where(iframe, svg, embed, object) {
+    max-width: 100%;
+  }
+
   /* Shiki dual theme support (local MDX) */
   .shiki,
   .shiki span {
@@ -142,7 +160,9 @@
     @apply leading-relaxed font-mono! rounded-lg! border border-border my-6! text-[13px]!;
     background-color: #f6f8fa !important;
     padding: 1rem !important;
+    max-width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .dark .prose pre {
@@ -152,10 +172,14 @@
   /* Inline code (not inside pre) */
   .prose code {
     @apply m-0! mx-1! border rounded-md! px-1.5 py-0.5 bg-muted/60 dark:bg-muted/40 text-[13px]! font-mono text-foreground/90!;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .prose pre code {
     @apply m-0! mx-0! border-0! p-0! bg-transparent! text-inherit!;
+    overflow-wrap: normal;
+    word-break: normal;
   }
 
   .prose code::before,
@@ -164,7 +188,10 @@
   }
 
   /* Chroma syntax highlighting — GitHub Light (default) */
-  .chroma { background-color: transparent; }
+  .chroma {
+    background-color: transparent;
+    max-width: 100%;
+  }
   .chroma .err { color: #f6f8fa; background-color: #82071e }
   .chroma .lnlinks { outline: none; text-decoration: none; color: inherit }
   .chroma .lntd { vertical-align: top; padding: 0; margin: 0; border: 0 }
@@ -172,7 +199,7 @@
   .chroma .hl { background-color: #dedede }
   .chroma .lnt { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em; color: #7f7f7f }
   .chroma .ln { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em; color: #7f7f7f }
-  .chroma .line { display: flex }
+  .chroma .line { display: block; min-width: 0 }
   .chroma .k { color: #cf222e }
   .chroma .kc { color: #cf222e }
   .chroma .kd { color: #cf222e }
@@ -370,14 +397,21 @@
     @apply mr-2 align-middle!;
   }
 
-  .prose :where(table):not(:where([class~="not-prose"]) *) {
-    @apply w-full min-w-full;
+  /* Wide markdown tables scroll inside the post instead of stretching the page.
+     Same pattern as GitHub markdown CSS: keep table layout, cap width, scroll overflow.
+     Exclude Chroma line-number tables (.lntable) so code highlighting is untouched. */
+  .prose :where(table):not(.lntable):not(:where([class~="not-prose"] *)) {
+    display: block;
+    width: max-content;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     border-collapse: separate;
     border-spacing: 0;
   }
 
-  .prose :where(th):not(:where([class~="not-prose"] *)),
-  .prose :where(td):not(:where([class~="not-prose"] *)) {
+  .prose :where(th):not(:where(.chroma *)):not(:where([class~="not-prose"] *)),
+  .prose :where(td):not(:where(.chroma *)):not(:where([class~="not-prose"] *)) {
     @apply px-6 py-4 align-middle m-0 whitespace-nowrap;
   }
 
@@ -385,20 +419,20 @@
     @apply hover:bg-accent/50! transition-colors! cursor-pointer! h-10!;
   }
 
-  .prose :where(th):not(:where([class~="not-prose"] *)) {
+  .prose :where(th):not(:where(.chroma *)):not(:where([class~="not-prose"] *)) {
     @apply text-left font-semibold text-foreground border-b border-border m-0! bg-muted/50 p-3! py-2!;
   }
 
-  .prose :where(td):not(:where([class~="not-prose"] *)) {
+  .prose :where(td):not(:where(.chroma *)):not(:where([class~="not-prose"] *)) {
     @apply text-muted-foreground border-b border-border text-sm! p-2!;
   }
 
-  .prose :where(th:not(:last-child)):not(:where([class~="not-prose"] *)),
-  .prose :where(td:not(:last-child)):not(:where([class~="not-prose"] *)) {
+  .prose :where(th:not(:last-child)):not(:where(.chroma *)):not(:where([class~="not-prose"] *)),
+  .prose :where(td:not(:last-child)):not(:where(.chroma *)):not(:where([class~="not-prose"] *)) {
     @apply border-r border-border;
   }
 
-  .prose :where(tbody tr:last-child td):not(:where([class~="not-prose"] *)) {
+  .prose :where(tbody tr:last-child td):not(:where(.chroma *)):not(:where([class~="not-prose"] *)) {
     @apply border-b-0;
   }
 }
