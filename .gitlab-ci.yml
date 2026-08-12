@@ -1,3 +1,5 @@
+# GitHub is the canonical remote. Production deploys on github.com run
+# .github/workflows/deploy.yml. This file remains for a GitLab mirror.
 stages:
   - test
   - build

@@ -247,11 +247,7 @@ POST /api/sync (protected by X-API-Key)
   └─ 6. Return sync summary
 ```
 
-Automated via cron (Tuesday 9:00 AM IST / 3:30 AM UTC):
-
-```
-30 3 * * 2 curl -X POST -H "X-API-Key: $SYNC_KEY" https://api.shashwatdixit.com/api/sync
-```
+Automated via GitHub Actions (Tuesday 9:00 AM IST / 3:30 AM UTC) in `.github/workflows/deploy.yml`.
 
 ## Request Flow
 
@@ -385,7 +381,7 @@ docker compose up -d
 
 1. Write markdown in GitLab repo (`status: writing`)
 2. When ready: set `status: published`, set `date`, commit and push
-3. Tuesday 9 AM IST: cron triggers `POST /api/sync`
+3. Tuesday 9 AM IST: GitHub Actions triggers `POST /api/sync`
 4. Backend syncs: pulls repo, parses, upserts DB, flushes Redis cache
 5. Blog is live immediately (Astro SSR fetches fresh data)
 
@@ -405,6 +401,29 @@ docker compose up -d
 │  All services via docker-compose                 │
 └─────────────────────────────────────────────────┘
 ```
+
+### GitHub Actions (push to `main`)
+
+Pushes to `main` run `.github/workflows/deploy.yml`:
+
+1. Test the Go backend (`go vet`, `go build`) and Astro frontend (`pnpm build`)
+2. SSH to the EC2 host, fast-forward `~/portfolio` from this GitHub repo, then `docker compose up -d --build`
+3. Hit `GET /api/health` until the API is up
+4. Trigger `POST /api/sync` to refresh blog content
+
+A weekly scheduled run (Tuesday 9:00 AM IST) only triggers the sync. You can also run the workflow manually from the Actions tab.
+
+Add these repository secrets under **Settings → Secrets and variables → Actions**:
+
+| Secret | Purpose |
+| --- | --- |
+| `SSH_PRIVATE_KEY` | Private key whose public half is authorized on the EC2 host |
+| `SSH_KNOWN_HOSTS` | Host key line from `ssh-keyscan -H <host>` |
+| `DEPLOY_USER` | SSH user on the EC2 host |
+| `DEPLOY_HOST` | EC2 hostname or IP |
+| `SYNC_API_KEY` | Same value as `SYNC_API_KEY` on the server |
+
+The EC2 clone should live at `~/portfolio` and already have Docker Compose and a working `.env`. The deploy job fetches from GitHub, so the server remote does not need to stay pointed at GitLab.
 
 ## TODO
 
@@ -477,6 +496,6 @@ docker compose up -d
 
 - [x] `docker-compose.yml` — Go backend, Astro, PostgreSQL, Redis
 - [x] Caddy / Nginx reverse proxy config
-- [x] Option To Trigger Deploy and Trigger Gitlab Repo Pull (via POST /api/sync + GitLab CI)
-- [x] Cron job for weekly sync (GitLab scheduled pipeline)
-- [x] CI/CD pipeline (GitLab CI)
+- [x] Option To Trigger Deploy and Trigger Gitlab Repo Pull (via POST /api/sync + GitHub Actions)
+- [x] Cron job for weekly sync (GitHub Actions schedule)
+- [x] CI/CD pipeline (GitHub Actions on `main`, GitLab CI retained as a mirror)
