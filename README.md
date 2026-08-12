@@ -417,17 +417,51 @@ No new AWS services, no container registry, and no extra instance. App images st
 
 Then it hits `GET /api/health` and triggers `POST /api/sync`. A weekly scheduled run (Tuesday 9:00 AM IST) only syncs blog content. You can also run the workflow from the Actions tab.
 
-Add these repository secrets under **Settings → Secrets and variables → Actions**:
+These values are **not in this repository**. They come from the SSH login you already use, or you create them once.
 
-| Secret | Purpose |
-| --- | --- |
-| `SSH_PRIVATE_KEY` | Private key whose public half is authorized on the EC2 host |
-| `SSH_KNOWN_HOSTS` | Host key line from `ssh-keyscan -H <host>` |
-| `DEPLOY_USER` | SSH user on the EC2 host |
-| `DEPLOY_HOST` | EC2 hostname or IP |
-| `SYNC_API_KEY` | Same value as `SYNC_API_KEY` on the server |
+| Name | Where it lives | Required? |
+| --- | --- | --- |
+| `DEPLOY_USER` | The user in `ssh USER@HOST` (often `ubuntu` or `ec2-user`) | Yes — GitHub **variable** |
+| `DEPLOY_HOST` | The host in `ssh USER@HOST`, or EC2 → Instances → Public IPv4 | Yes — GitHub **variable** |
+| `SSH_PRIVATE_KEY` | A new deploy key you generate (not something AWS emails you) | Yes — GitHub **secret** |
+| `SSH_KNOWN_HOSTS` | Output of `ssh-keyscan -H HOST` | No — the workflow scans if omitted |
+| `SYNC_API_KEY` | `SYNC_API_KEY=...` in `~/portfolio/.env` on the server | No — deploy still runs; blog sync is skipped |
 
-The EC2 clone should live at `~/portfolio` with Docker Compose and a working `.env`. Leave the GitHub `production` environment without required reviewers so deploys stay automatic.
+Add them under **Settings → Secrets and variables → Actions**. Put `DEPLOY_USER` and `DEPLOY_HOST` on the **Variables** tab (they are not secret). Put keys on the **Secrets** tab.
+
+#### If GitLab CI already deployed this site
+
+Open the GitLab project → **Settings → CI/CD → Variables**. Copy `SSH_PRIVATE_KEY`, `DEPLOY_USER`, `DEPLOY_HOST`, and `SYNC_API_KEY` into GitHub. You can skip `SSH_KNOWN_HOSTS`.
+
+#### If you only SSH in by hand
+
+On your laptop, run the helper with the same `user@host` you already type:
+
+```bash
+./scripts/setup-github-deploy.sh ubuntu@YOUR_EC2_HOST
+```
+
+That creates `~/.ssh/portfolio-github-deploy`, installs the public half on the instance, and prints what to paste into GitHub. Manual equivalent:
+
+```bash
+ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/portfolio-github-deploy -N ""
+ssh-copy-id -i ~/.ssh/portfolio-github-deploy.pub ubuntu@YOUR_EC2_HOST
+cat ~/.ssh/portfolio-github-deploy   # paste the full PEM, including BEGIN/END lines, as SSH_PRIVATE_KEY
+```
+
+Use the **private** key (`portfolio-github-deploy`), not the `.pub` file. Do not commit it or paste it into chat.
+
+Forgot the host? AWS Console → **EC2 → Instances** → select the box → **Public IPv4 address** (or the Elastic IP). Forgot the user? Ubuntu AMIs use `ubuntu`; Amazon Linux uses `ec2-user`.
+
+Forgot `SYNC_API_KEY`? After you can SSH in:
+
+```bash
+grep SYNC_API_KEY ~/portfolio/.env
+```
+
+The EC2 security group must allow inbound **TCP 22** from the internet (or at least from GitHub). If SSH is locked to your home IP only, GitHub Actions cannot connect.
+
+The clone on the box should already be at `~/portfolio` with Docker Compose and a working `.env`. Leave the GitHub `production` environment without required reviewers so deploys stay automatic.
 
 ## TODO
 

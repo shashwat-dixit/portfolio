@@ -1,9 +1,15 @@
-# Required repository secrets (Settings → Secrets and variables → Actions):
-#   SSH_PRIVATE_KEY  — private key whose public half is on the EC2 host
-#   SSH_KNOWN_HOSTS  — output of `ssh-keyscan -H <host>`
-#   DEPLOY_USER      — SSH user on the EC2 host
-#   DEPLOY_HOST      — EC2 hostname or IP
-#   SYNC_API_KEY     — same value as the server's SYNC_API_KEY
+# Automates the EC2 deploy you currently run by hand:
+#   git pull origin main && docker compose pull && docker compose up -d --build
+# Uses free GitHub Actions minutes on this public repo. Builds still happen on
+# the existing EC2 host — no extra AWS services or registry.
+#
+# Required (create these once — see README "If you do not have these yet"):
+#   Secret  SSH_PRIVATE_KEY — deploy key (generate with scripts/setup-github-deploy.sh)
+#   Variable DEPLOY_USER    — SSH user, e.g. ubuntu
+#   Variable DEPLOY_HOST    — EC2 hostname or IP
+# Optional:
+#   Secret SSH_KNOWN_HOSTS  — if unset, the job runs ssh-keyscan
+#   Secret SYNC_API_KEY     — if unset, blog sync is skipped
 name: CI/CD
 
 on:
@@ -75,19 +81,22 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER || secrets.DEPLOY_USER }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST || secrets.DEPLOY_HOST }}
         run: |
           set -euo pipefail
           : "${SSH_PRIVATE_KEY:?Set the SSH_PRIVATE_KEY repository secret}"
-          : "${SSH_KNOWN_HOSTS:?Set the SSH_KNOWN_HOSTS repository secret}"
-          : "${DEPLOY_USER:?Set the DEPLOY_USER repository secret}"
-          : "${DEPLOY_HOST:?Set the DEPLOY_HOST repository secret}"
+          : "${DEPLOY_USER:?Set the DEPLOY_USER repository variable}"
+          : "${DEPLOY_HOST:?Set the DEPLOY_HOST repository variable}"
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
           eval "$(ssh-agent -s)"
           printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-          printf '%s\n' "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+          if [ -n "${SSH_KNOWN_HOSTS}" ]; then
+            printf '%s\n' "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+          else
+            ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+          fi
           chmod 644 ~/.ssh/known_hosts
           ssh -o StrictHostKeyChecking=yes "$DEPLOY_USER@$DEPLOY_HOST" bash -s << 'EOF'
           set -euo pipefail
@@ -130,7 +139,10 @@ jobs:
           SYNC_API_KEY: ${{ secrets.SYNC_API_KEY }}
         run: |
           set -euo pipefail
-          : "${SYNC_API_KEY:?Set the SYNC_API_KEY repository secret}"
+          if [ -z "${SYNC_API_KEY}" ]; then
+            echo "SYNC_API_KEY is not set; skipping blog sync."
+            exit 0
+          fi
           curl -sf -X POST \
             -H "X-API-Key: ${SYNC_API_KEY}" \
             "https://api.shashwatdixit.com/api/sync"
