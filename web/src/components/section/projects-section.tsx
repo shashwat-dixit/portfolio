@@ -16,6 +16,7 @@ export default function ProjectsSection() {
             <BlurFade
               key={project.title}
               delay={BLUR_FADE_DELAY * 12 + id * 0.05}
+              className="overflow-visible"
             >
               <ProjectCard
                 href={project.href}

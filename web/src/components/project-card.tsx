@@ -129,7 +129,7 @@ export function ProjectCard({
           </div>
         )}
 
-        <div className="mt-auto flex flex-wrap items-center gap-2">
+        <div className="relative z-10 mt-auto flex flex-wrap items-center gap-2 overflow-visible">
           {links?.map((link, idx) => (
             <a
               href={link.href}
