@@ -59,7 +59,7 @@ function positionMenu(
   anchor: DOMRect,
   menu: HTMLElement
 ): CSSProperties {
-  const menuWidth = menu.offsetWidth || 208;
+  const menuWidth = menu.offsetWidth || 224;
   const menuHeight = menu.offsetHeight || 0;
   const maxLeft = window.innerWidth - menuWidth - VIEWPORT_PADDING;
   const left = Math.max(
@@ -190,7 +190,7 @@ export function ProjectShareButton({
   };
 
   const itemClassName =
-    "flex h-9 w-full shrink-0 items-center gap-2.5 rounded-md px-2.5 text-sm text-foreground outline-none hover:bg-accent focus-visible:bg-accent";
+    "flex h-9 w-full shrink-0 items-center gap-3 rounded-md px-2.5 text-left text-sm leading-none whitespace-nowrap text-foreground outline-none hover:bg-accent focus-visible:bg-accent";
 
   const menu =
     open && typeof document !== "undefined"
@@ -201,10 +201,10 @@ export function ProjectShareButton({
             role="menu"
             aria-label={`Share ${title} options`}
             style={menuStyle}
-            className="flex max-h-[min(24rem,calc(100vh-1rem))] w-52 flex-col overflow-y-auto overscroll-contain rounded-xl border border-border bg-popover p-1 text-popover-foreground shadow-lg"
+            className="flex max-h-[min(24rem,calc(100vh-1rem))] w-56 flex-col overflow-y-auto overscroll-contain rounded-xl border border-border bg-popover p-1 text-popover-foreground shadow-xl"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground">
+            <div className="px-2.5 py-2 text-[11px] font-medium tracking-wide text-muted-foreground">
               Share via
             </div>
             {targets.map((target) => {
@@ -221,7 +221,7 @@ export function ProjectShareButton({
                 >
                   {Icon ? (
                     <span
-                      className="inline-flex size-3.5 shrink-0 items-center justify-center text-muted-foreground"
+                      className="flex w-4 shrink-0 items-center justify-center text-muted-foreground"
                       aria-hidden
                     >
                       <Icon className="size-3.5" />
@@ -239,9 +239,13 @@ export function ProjectShareButton({
               className={itemClassName}
             >
               {copied ? (
-                <Check className="size-3.5 shrink-0 text-green-600" aria-hidden />
+                <span className="flex w-4 shrink-0 items-center justify-center" aria-hidden>
+                  <Check className="size-3.5 text-green-600" />
+                </span>
               ) : (
-                <Copy className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
+                <span className="flex w-4 shrink-0 items-center justify-center text-muted-foreground" aria-hidden>
+                  <Copy className="size-3.5" />
+                </span>
               )}
               {copied ? "Copied" : "Copy text"}
             </button>
