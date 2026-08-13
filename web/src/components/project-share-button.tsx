@@ -1,6 +1,27 @@
-import { useEffect, useId, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ComponentType,
+  type CSSProperties,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
+import { createPortal } from "react-dom";
 import { Check, Copy, Share2 } from "lucide-react";
+import {
+  FaEnvelope,
+  FaFacebook,
+  FaLinkedinIn,
+  FaRedditAlien,
+  FaTelegram,
+  FaWhatsapp,
+  FaXTwitter,
+} from "react-icons/fa6";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import {
   buildShareText,
@@ -18,6 +39,54 @@ type Props = {
   className?: string;
 };
 
+const SHARE_ICONS: Record<
+  string,
+  ComponentType<{ className?: string }>
+> = {
+  x: FaXTwitter,
+  linkedin: FaLinkedinIn,
+  facebook: FaFacebook,
+  reddit: FaRedditAlien,
+  whatsapp: FaWhatsapp,
+  telegram: FaTelegram,
+  email: FaEnvelope,
+};
+
+const MENU_GAP = 8;
+const VIEWPORT_PADDING = 8;
+
+function positionMenu(
+  anchor: DOMRect,
+  menu: HTMLElement
+): CSSProperties {
+  const menuWidth = menu.offsetWidth || 224;
+  const menuHeight = menu.offsetHeight || 0;
+  const maxLeft = window.innerWidth - menuWidth - VIEWPORT_PADDING;
+  const left = Math.max(
+    VIEWPORT_PADDING,
+    Math.min(anchor.right - menuWidth, maxLeft)
+  );
+
+  const spaceBelow = window.innerHeight - anchor.bottom - MENU_GAP;
+  const spaceAbove = anchor.top - MENU_GAP;
+  const openUpward =
+    menuHeight > 0 && spaceBelow < menuHeight && spaceAbove > spaceBelow;
+
+  const top = openUpward
+    ? Math.max(VIEWPORT_PADDING, anchor.top - menuHeight - MENU_GAP)
+    : Math.min(
+        anchor.bottom + MENU_GAP,
+        window.innerHeight - menuHeight - VIEWPORT_PADDING
+      );
+
+  return {
+    position: "fixed",
+    top,
+    left,
+    zIndex: 50,
+  };
+}
+
 export function ProjectShareButton({
   title,
   description,
@@ -27,8 +96,22 @@ export function ProjectShareButton({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [menuStyle, setMenuStyle] = useState<CSSProperties>({
+    position: "fixed",
+    top: 0,
+    left: 0,
+    zIndex: 50,
+  });
+  const rootRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
+
+  const setMenuRef = useCallback((node: HTMLDivElement | null) => {
+    menuRef.current = node;
+    const anchor = rootRef.current?.getBoundingClientRect();
+    if (!node || !anchor) return;
+    setMenuStyle(positionMenu(anchor, node));
+  }, []);
 
   const payload: ProjectSharePayload = {
     title,
@@ -39,13 +122,30 @@ export function ProjectShareButton({
   const shareText = buildShareText(payload);
   const targets = getShareTargets(shareText, websiteUrl);
 
+  const updateMenuPosition = useCallback(() => {
+    const anchor = rootRef.current?.getBoundingClientRect();
+    const menu = menuRef.current;
+    if (!anchor || !menu) return;
+    setMenuStyle(positionMenu(anchor, menu));
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    updateMenuPosition();
+  }, [open, updateMenuPosition, targets.length, copied]);
+
   useEffect(() => {
     if (!open) return;
 
     const onPointerDown = (event: globalThis.MouseEvent) => {
-      if (!menuRef.current?.contains(event.target as Node)) {
-        setOpen(false);
+      const target = event.target as Node;
+      if (
+        rootRef.current?.contains(target) ||
+        menuRef.current?.contains(target)
+      ) {
+        return;
       }
+      setOpen(false);
     };
 
     const onKeyDown = (event: KeyboardEvent) => {
@@ -54,11 +154,15 @@ export function ProjectShareButton({
 
     document.addEventListener("mousedown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
+    window.addEventListener("resize", updateMenuPosition);
+    window.addEventListener("scroll", updateMenuPosition, true);
     return () => {
       document.removeEventListener("mousedown", onPointerDown);
       document.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("resize", updateMenuPosition);
+      window.removeEventListener("scroll", updateMenuPosition, true);
     };
-  }, [open]);
+  }, [open, updateMenuPosition]);
 
   useEffect(() => {
     if (!copied) return;
@@ -85,8 +189,73 @@ export function ProjectShareButton({
     if (ok) setCopied(true);
   };
 
+  const itemClassName =
+    "flex h-9 w-full shrink-0 items-center gap-3 rounded-md px-2.5 text-left text-sm leading-none whitespace-nowrap text-foreground outline-none hover:bg-accent focus-visible:bg-accent";
+
+  const menu =
+    open && typeof document !== "undefined"
+      ? createPortal(
+          <div
+            ref={setMenuRef}
+            id={menuId}
+            role="menu"
+            aria-label={`Share ${title} options`}
+            style={menuStyle}
+            className="flex max-h-[min(24rem,calc(100vh-1rem))] w-56 flex-col overflow-y-auto overscroll-contain rounded-xl border border-border bg-popover p-1 text-popover-foreground shadow-xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="px-2.5 py-2 text-[11px] font-medium tracking-wide text-muted-foreground">
+              Share via
+            </div>
+            {targets.map((target) => {
+              const Icon = SHARE_ICONS[target.id];
+              return (
+                <a
+                  key={target.id}
+                  href={target.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  role="menuitem"
+                  className={itemClassName}
+                  onClick={() => setOpen(false)}
+                >
+                  {Icon ? (
+                    <span
+                      className="flex w-4 shrink-0 items-center justify-center text-muted-foreground"
+                      aria-hidden
+                    >
+                      <Icon className="size-3.5" />
+                    </span>
+                  ) : null}
+                  {target.label}
+                </a>
+              );
+            })}
+            <Separator className="my-1" />
+            <button
+              type="button"
+              role="menuitem"
+              onClick={handleCopy}
+              className={itemClassName}
+            >
+              {copied ? (
+                <span className="flex w-4 shrink-0 items-center justify-center" aria-hidden>
+                  <Check className="size-3.5 text-green-600" />
+                </span>
+              ) : (
+                <span className="flex w-4 shrink-0 items-center justify-center text-muted-foreground" aria-hidden>
+                  <Copy className="size-3.5" />
+                </span>
+              )}
+              {copied ? "Copied" : "Copy text"}
+            </button>
+          </div>,
+          document.body
+        )
+      : null;
+
   return (
-    <div ref={menuRef} className={cn("relative", className)}>
+    <div ref={rootRef} className={cn("relative inline-flex shrink-0", className)}>
       <button
         type="button"
         onClick={handleShareClick}
@@ -104,46 +273,7 @@ export function ProjectShareButton({
           Share
         </Badge>
       </button>
-
-      {open && (
-        <div
-          id={menuId}
-          role="menu"
-          aria-label={`Share ${title} options`}
-          className="absolute right-0 top-full z-20 mt-2 w-48 rounded-lg border border-border bg-background p-1.5 shadow-lg"
-          onClick={(event) => event.stopPropagation()}
-        >
-          <p className="px-2 py-1.5 text-[11px] font-medium text-muted-foreground">
-            Share via
-          </p>
-          {targets.map((target) => (
-            <a
-              key={target.id}
-              href={target.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              role="menuitem"
-              className="flex w-full items-center rounded-md px-2 py-1.5 text-sm text-foreground hover:bg-accent"
-              onClick={() => setOpen(false)}
-            >
-              {target.label}
-            </a>
-          ))}
-          <button
-            type="button"
-            role="menuitem"
-            onClick={handleCopy}
-            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-foreground hover:bg-accent"
-          >
-            {copied ? (
-              <Check className="size-3.5 text-green-600" aria-hidden />
-            ) : (
-              <Copy className="size-3.5" aria-hidden />
-            )}
-            {copied ? "Copied" : "Copy text"}
-          </button>
-        </div>
-      )}
+      {menu}
     </div>
   );
 }
