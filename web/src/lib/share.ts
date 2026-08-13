@@ -99,29 +99,52 @@ export function getShareTargets(text: string, url?: string): ShareTarget[] {
   return targets;
 }
 
+function isHandheldDevice(): boolean {
+  if (typeof navigator === "undefined") return false;
+
+  const ua = navigator.userAgent;
+  if (/Android|iPhone|iPod|iPad/i.test(ua)) return true;
+
+  // iPadOS 13+ Safari reports as Macintosh with touch points.
+  return navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+}
+
+export function shouldUseNativeShare(): boolean {
+  return (
+    typeof navigator !== "undefined" &&
+    typeof navigator.share === "function" &&
+    isHandheldDevice()
+  );
+}
+
+function buildNativeShareData(payload: ProjectSharePayload): ShareData {
+  const url = payload.websiteUrl || payload.githubUrl;
+  return {
+    title: payload.title,
+    text: payload.description.trim(),
+    ...(url ? { url } : {}),
+  };
+}
+
 export async function shareProject(
   payload: ProjectSharePayload
 ): Promise<"shared" | "fallback" | "cancelled"> {
-  const text = buildShareText(payload);
-
-  // Prefer a single text payload so messaging apps keep the description
-  // along with both the website and GitHub links.
-  if (
-    typeof navigator !== "undefined" &&
-    typeof navigator.share === "function" &&
-    (!navigator.canShare || navigator.canShare({ title: payload.title, text }))
-  ) {
-    try {
-      await navigator.share({
-        title: payload.title,
-        text,
-      });
-      return "shared";
-    } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") {
-        return "cancelled";
+  // Desktop share sheets (Safari/macOS especially) scrape URLs out of `text`
+  // and present them as link-preview images — e.g. "2 Images" / "Phabric and
+  // Phabric" — instead of the project write-up. The in-page menu is the
+  // better desktop UX anyway.
+  if (shouldUseNativeShare()) {
+    const data = buildNativeShareData(payload);
+    if (!navigator.canShare || navigator.canShare(data)) {
+      try {
+        await navigator.share(data);
+        return "shared";
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return "cancelled";
+        }
+        // Fall through to custom menu when native share fails
       }
-      // Fall through to custom menu when native share fails
     }
   }
 
