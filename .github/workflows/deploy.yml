@@ -1,5 +1,5 @@
 # Automates the EC2 deploy you currently run by hand:
-#   git pull origin main && docker compose pull && docker compose up -d --build
+#   git pull origin main && bash scripts/compose-up-production.sh
 # Uses free GitHub Actions minutes on this public repo. Builds still happen on
 # the existing EC2 host — no extra AWS services or registry.
 #
@@ -103,9 +103,7 @@ jobs:
           cd ~/portfolio
           git remote set-url origin https://github.com/shashwat-dixit/portfolio.git
           git pull origin main
-          docker compose pull
-          docker compose up -d --build --remove-orphans
-          docker image prune -f
+          bash scripts/compose-up-production.sh
           EOF
       - name: Verify API health
         run: |

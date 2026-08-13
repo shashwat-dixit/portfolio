@@ -96,9 +96,7 @@ deploy:
       ssh $DEPLOY_USER@$DEPLOY_HOST << 'EOF'
         cd ~/portfolio
         git pull origin main
-        docker compose pull
-        docker compose up -d --build --remove-orphans
-        docker image prune -f
+        bash scripts/compose-up-production.sh
       EOF
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
