@@ -409,9 +409,10 @@ Pushes to `main` run `.github/workflows/deploy.yml`. After tests pass, GitHub Ac
 ```bash
 cd ~/portfolio
 git pull origin main
-docker compose pull
-docker compose up -d --build --remove-orphans
+bash scripts/compose-up-production.sh
 ```
+
+That script frees unused Docker images and BuildKit cache **before** rebuilding. Pruning only after `compose up --build` is too late if the disk is already full — the frontend image unpack then fails with `no space left on device`.
 
 No new AWS services, no container registry, and no extra instance. App images still build on the EC2 box you already pay for. GitHub Actions minutes are free on this public repository.
 
