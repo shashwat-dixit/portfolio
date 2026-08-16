@@ -150,12 +150,17 @@ const { baseFontSize } = CONFIG.typography;
     <meta property="og:site_name" content={DATA.name} />
     <meta property="og:locale" content={CONFIG.site.locale} />
     <meta property="og:image" content={ogImage} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="2400" />
+    <meta property="og:image:height" content="1260" />
+    <meta property="og:image:alt" content={`${DATA.name} — ${description}`} />
 
     <!-- Twitter -->
     <meta name="twitter:card" content={CONFIG.seo.twitterCard} />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={`${DATA.name} — ${description}`} />
   </head>
   <body class="min-h-screen bg-background font-sans antialiased relative">
     <!-- FlickeringGrid header background - matches template exactly -->

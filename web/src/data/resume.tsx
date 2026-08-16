@@ -37,7 +37,7 @@ export const DATA = {
   summary:
     "I'm a software engineer at [Interview Kickstart](https://interviewkickstart.com) working on payments — gateway integrations, installment billing, and the flow that grants learners access after they pay. Previously at [Instahyre](https://instahyre.com) I built distributed systems, search infrastructure, and optimized backend performance. Before that I built event-driven pipelines and SSR frontends as a [full-stack contractor](/#work). I hold a degree in [Electrical & Electronics Engineering from NMIT Bengaluru](https://nmit.ac.in) and have authored [IEEE research papers on Quantum Computing](https://scholar.google.com/citations?user=q3MbjLQAAAAJ&hl=en). I like working across the stack — from Redis locking to Elasticsearch query parsers to Next.js SPAs.",
   avatarUrl: "/avatar.jpg",
-  ogImage: "/og_image.png",
+  ogImage: "/og.png",
   sections: {
     about: { order: 1, enabled: true, heading: "About", label: "About" },
     work: {

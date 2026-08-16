@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <title>OG image</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --background: oklch(0.18 0 0);
+        --foreground: oklch(0.985 0 0);
+        --muted: oklch(0.269 0 0);
+        --muted-foreground: oklch(0.708 0 0);
+        --primary: oklch(0.922 0 0);
+        --border: oklch(1 0 0 / 10%);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+        background: var(--background);
+        color: var(--foreground);
+        font-family: Outfit, "Outfit Variable", ui-sans-serif, system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      body {
+        position: relative;
+      }
+
+      .grid {
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 140px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='2' height='2' fill='rgba(250,250,250,0.22)'/%3E%3C/svg%3E");
+        background-size: 4px 4px;
+        -webkit-mask-image: linear-gradient(to bottom, black, transparent);
+        mask-image: linear-gradient(to bottom, black, transparent);
+        pointer-events: none;
+      }
+
+      .frame {
+        position: relative;
+        z-index: 1;
+        height: 630px;
+        padding: 52px 88px 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 44px;
+      }
+
+      .hero {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 32px;
+      }
+
+      .hero-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      h1 {
+        font-size: 56px;
+        font-weight: 600;
+        letter-spacing: -0.05em;
+        line-height: 1.05;
+        color: var(--foreground);
+      }
+
+      .lede {
+        font-size: 22px;
+        font-weight: 400;
+        line-height: 1.45;
+        color: var(--muted-foreground);
+        max-width: 720px;
+      }
+
+      .avatar {
+        width: 148px;
+        height: 148px;
+        flex-shrink: 0;
+        border-radius: 9999px;
+        object-fit: cover;
+        border: 1px solid var(--border);
+        box-shadow:
+          0 10px 15px -3px rgb(0 0 0 / 0.35),
+          0 4px 6px -4px rgb(0 0 0 / 0.3);
+        box-shadow: 0 0 0 8px var(--muted), 0 12px 24px rgb(0 0 0 / 0.35);
+      }
+
+      .about-label {
+        display: flex;
+        align-items: center;
+        width: 100%;
+      }
+
+      .about-label .rule {
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(
+          to right,
+          transparent 5%,
+          var(--border) 50%,
+          transparent 95%
+        );
+      }
+
+      .about-label .rule.left {
+        background: linear-gradient(
+          to right,
+          transparent 5%,
+          var(--border) 95%,
+          transparent
+        );
+      }
+
+      .about-label .rule.right {
+        background: linear-gradient(
+          to left,
+          transparent 5%,
+          var(--border) 95%,
+          transparent
+        );
+      }
+
+      .pill {
+        border: 1px solid var(--border);
+        background: var(--primary);
+        border-radius: 14px;
+        padding: 6px 18px;
+        z-index: 1;
+      }
+
+      .pill span {
+        color: var(--background);
+        font-size: 15px;
+        font-weight: 500;
+        line-height: 1.2;
+      }
+
+      .bio {
+        font-size: 20px;
+        font-weight: 400;
+        line-height: 1.65;
+        color: var(--muted-foreground);
+        text-wrap: pretty;
+      }
+
+      .bio a {
+        color: var(--primary);
+        text-decoration: underline;
+        text-underline-offset: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid"></div>
+    <div class="frame">
+      <div class="hero">
+        <div class="hero-copy">
+          <h1>Hi, I'm Shashwat</h1>
+          <p class="lede">
+            Software Engineer building performant backends and full-stack
+            applications. I care about systems that scale and developer
+            experience that doesn't suck.
+          </p>
+        </div>
+        <img class="avatar" src="/avatar.jpg" alt="Shashwat Dixit" />
+      </div>
+
+      <div>
+        <div class="about-label">
+          <div class="rule left"></div>
+          <div class="pill"><span>About</span></div>
+          <div class="rule right"></div>
+        </div>
+      </div>
+
+      <p class="bio">
+        I'm a software engineer at
+        <a>Interview Kickstart</a>
+        working on payments — gateway integrations, installment billing, and the
+        flow that grants learners access after they pay. Previously at
+        <a>Instahyre</a>
+        I built distributed systems, search infrastructure, and optimized
+        backend performance. Before that I built event-driven pipelines and SSR
+        frontends as a
+        <a>full-stack contractor</a>. I hold a degree in
+        <a>Electrical &amp; Electronics Engineering from NMIT Bengaluru</a>
+        and have authored
+        <a>IEEE research papers on Quantum Computing</a>. I like working across
+        the stack — from Redis locking to Elasticsearch query parsers to Next.js
+        SPAs.
+      </p>
+    </div>
+  </body>
+</html>
