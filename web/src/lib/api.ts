@@ -85,6 +85,16 @@ export async function getTags(): Promise<TagsResponse> {
 }
 
 export async function getAllPosts(): Promise<PostSummary[]> {
-  const resp = await getPosts({ limit: 100 });
-  return resp.posts;
+  const posts: PostSummary[] = [];
+  let page = 1;
+  let totalPages = 1;
+
+  do {
+    const resp = await getPosts({ page, limit: 100 });
+    posts.push(...resp.posts);
+    totalPages = resp.pagination.totalPages;
+    page += 1;
+  } while (page <= totalPages);
+
+  return posts;
 }

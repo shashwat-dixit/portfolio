@@ -197,7 +197,9 @@ GET  /api/posts                   List published posts
      Response: { posts: [...], pagination: { page, limit, total, totalPages } }
 
 GET  /api/posts/:slug             Single post with full HTML
-     Response: { slug, title, description, contentHtml, tags, date, updated, cover, readingTime }
+     ?format=md                   Raw markdown (YAML frontmatter + body)
+     Header: Accept: text/markdown
+     JSON: { slug, title, description, contentHtml, contentMd, tags, date, updated, cover, readingTime }
 
 GET  /api/tags                    All tags with post counts
      Response: { tags: [{ name, slug, count }] }
@@ -361,6 +363,7 @@ Open <http://localhost:4321>. The frontend fetches data from the backend at `htt
 - **Blog listing**: <http://localhost:4321/blog>
 - **Health check**: <http://localhost:8080/api/health>
 - **API posts**: <http://localhost:8080/api/posts>
+- **AI markdown**: see [Testing AI / ChatGPT access](#testing-ai--chatgpt-access)
 
 ### Stopping
 
@@ -376,6 +379,69 @@ The production `docker-compose.yml` runs only the backend (PostgreSQL and Redis 
 ```bash
 docker compose up -d
 ```
+
+## Testing AI / ChatGPT access
+
+The public site serves markdown that ChatGPT, Claude, and similar agents can read without scraping HTML.
+
+| URL | What you should see |
+| --- | --- |
+| `/llms.txt` | Markdown index of the homepage and every published post |
+| `/llms-full.txt` | Homepage plus every post body in one file |
+| `/index.md` | Homepage as markdown |
+| `/blog.md` | Blog index as markdown |
+| `/blog/<slug>.md` | Original post markdown, including YAML frontmatter |
+| `/robots.txt` | Allows GPTBot / ChatGPT-User and points at `/llms.txt` |
+
+The same HTML URLs also return markdown when the client sends `Accept: text/markdown` or a known AI user-agent (`ChatGPT-User`, `GPTBot`, `OAI-SearchBot`, and similar). Normal browsers still get HTML. The homepage is prerendered, so agents should use `/index.md` (linked from `/llms.txt`) rather than negotiating `/`.
+
+The API has the same post source:
+
+```bash
+curl -H "Accept: text/markdown" "http://localhost:8080/api/posts/<slug>"
+curl "http://localhost:8080/api/posts/<slug>?format=md"
+```
+
+A valid post body starts with YAML frontmatter (`---`, `title:`, `slug:`) then the markdown article. JSON responses include the same source in `contentMd`.
+
+### Check it locally
+
+With the frontend on `:4321` and backend on `:8080`:
+
+```bash
+./scripts/check-ai-content.sh http://localhost:4321 http://localhost:8080
+```
+
+Or open these in a browser and confirm they render as text, not the styled site:
+
+- <http://localhost:4321/llms.txt>
+- <http://localhost:4321/index.md>
+- <http://localhost:4321/blog.md>
+- <http://localhost:4321/blog/<slug>.md>
+
+Against production:
+
+```bash
+./scripts/check-ai-content.sh https://shashwatdixit.com https://api.shashwatdixit.com
+```
+
+### See it in ChatGPT
+
+GPTBot indexing can take days. You do not have to wait to verify the format:
+
+1. Open [ChatGPT](https://chatgpt.com) with **web search / browsing on**.
+2. Paste:
+
+   ```
+   Read https://shashwatdixit.com/llms.txt and list every page.
+   Then open one .md blog URL from that file and quote the first heading
+   and the YAML title/slug. Tell me if the body is markdown or HTML.
+   ```
+
+3. You should get citations to `/llms.txt` and a `.md` post, with a quoted markdown heading — not a dump of navigation HTML.
+4. Follow up with `What does Shashwat Dixit work on?` and check that the answer matches `/index.md` (Interview Kickstart, Instahyre, projects).
+
+You can also paste the raw `/llms.txt` or `/blog/<slug>.md` body into ChatGPT if search cannot fetch the URL yet. The file you pasted is exactly what an agent receives.
 
 ## Publishing Workflow
 
@@ -555,6 +621,7 @@ The clone on the box should already be at `~/portfolio` with Docker Compose and 
 - [ ] Cross-post to Substack (RSS feed import or API when available)
 - [X] Cache the landing page and utilize bf cache when navigating back from blog
 - [x] Fix the click on dark mode button
+- [x] Serve markdown / llms.txt so ChatGPT and other agents can read the site
 
 ### DevOps
 
