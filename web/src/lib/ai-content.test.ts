@@ -8,7 +8,9 @@ import {
   buildSitemapXml,
   looksLikeMarkdown,
   looksLikePostMarkdown,
+  markdownHeaders,
   markdownRewritePath,
+  plainTextHeaders,
   wantsMarkdown,
 } from "./ai-content.ts";
 
@@ -157,5 +159,12 @@ slug: django-orm-query-optimization
       xml,
       /type="text\/markdown" href="https:\/\/shashwatdixit\.com\/blog\/django-orm-query-optimization\.md"/
     );
+  });
+
+  it("serves llms.txt as text/plain so ChatGPT fetchers accept a .txt URL", () => {
+    const headers = new Headers(plainTextHeaders());
+    assert.equal(headers.get("Content-Type"), "text/plain; charset=utf-8");
+    const mdHeaders = new Headers(markdownHeaders());
+    assert.equal(mdHeaders.get("Content-Type"), "text/markdown; charset=utf-8");
   });
 });

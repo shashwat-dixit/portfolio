@@ -25,6 +25,12 @@ fetch() {
 
 echo "Checking AI markdown endpoints on ${SITE_URL} (API ${API_URL})"
 
+content_type() {
+  curl -fsS -D - -o /dev/null "$@" | tr -d '\r' | awk -F': ' 'tolower($1)=="content-type"{print $2; exit}'
+}
+
+llms_type="$(content_type "${SITE_URL}/llms.txt")"
+[[ "$llms_type" == text/plain* ]] || fail "/llms.txt Content-Type should be text/plain, got '${llms_type}'"
 llms="$(fetch "${SITE_URL}/llms.txt")"
 [[ "$llms" == \#* ]] || fail "/llms.txt should start with a markdown heading"
 [[ "$llms" == *"index.md"* ]] || fail "/llms.txt should link to index.md"
