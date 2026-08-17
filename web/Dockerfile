@@ -23,7 +23,7 @@ RUN pnpm build
 FROM base AS prod-deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc* ./
 RUN pnpm install --frozen-lockfile --prod --ignore-scripts && \
-    pnpm rebuild sharp || true && \
+    pnpm rebuild sharp @resvg/resvg-js || true && \
     rm -rf \
       node_modules/.pnpm/@esbuild+* \
       node_modules/.pnpm/esbuild@* \

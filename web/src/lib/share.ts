@@ -14,7 +14,7 @@ export function buildShareText({
   const lines = [title, "", description.trim()];
 
   if (websiteUrl) {
-    lines.push("", `Website: ${websiteUrl}`);
+    lines.push("", websiteUrl);
   }
 
   if (githubUrl) {
@@ -49,7 +49,7 @@ export function getShareTargets(text: string, url?: string): ShareTarget[] {
   const encodedText = encodeURIComponent(text);
   const shareUrl = url || (typeof window !== "undefined" ? window.location.href : "");
   const encodedUrl = encodeURIComponent(shareUrl);
-  const encodedTitle = encodeURIComponent(text.split("\n")[0] || "Project");
+  const encodedTitle = encodeURIComponent(text.split("\n")[0] || "Share");
 
   const targets: ShareTarget[] = [
     {
