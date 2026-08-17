@@ -62,9 +62,11 @@ func main() {
 	redisCache := cache.New(rdb)
 	postRepo := repository.NewPostRepo(pool)
 	tagRepo := repository.NewTagRepo(pool)
+	synRepo := repository.NewSyndicationRepo(pool)
 	markdownSvc := service.NewMarkdown()
 	postSvc := service.NewPostService(postRepo, tagRepo, redisCache)
-	syncSvc := service.NewSyncService(cfg, postRepo, tagRepo, markdownSvc, redisCache)
+	syndSvc := service.NewSyndicationService(cfg, postRepo, synRepo)
+	syncSvc := service.NewSyncService(cfg, postRepo, tagRepo, markdownSvc, redisCache, syndSvc)
 
 	// Handlers
 	postHandler := handler.NewPostHandler(postSvc)
@@ -98,7 +100,7 @@ func main() {
 		Addr:         ":" + cfg.Port,
 		Handler:      r,
 		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 30 * time.Second,
+		WriteTimeout: 5 * time.Minute,
 		IdleTimeout:  60 * time.Second,
 	}
 

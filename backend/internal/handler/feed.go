@@ -21,15 +21,16 @@ func NewFeedHandler(svc *service.PostService, cfg *config.Config) *FeedHandler {
 }
 
 func (h *FeedHandler) RSS(w http.ResponseWriter, r *http.Request) {
-	resp, err := h.svc.List(r.Context(), "", 1, 50, false)
+	posts, err := h.svc.ListForFeed(r.Context(), 50)
 	if err != nil {
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
 
 	feed := rssRoot{
-		Version: "2.0",
-		AtomNS:  "http://www.w3.org/2005/Atom",
+		Version:   "2.0",
+		AtomNS:    "http://www.w3.org/2005/Atom",
+		ContentNS: "http://purl.org/rss/1.0/modules/content/",
 		Channel: rssChannel{
 			Title:       "Shashwat Dixit's Blog",
 			Link:        h.cfg.SiteURL + "/blog",
@@ -44,13 +45,19 @@ func (h *FeedHandler) RSS(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	for _, post := range resp.Posts {
+	for _, post := range posts {
 		item := rssItem{
-			Title:       post.Title,
-			Link:        fmt.Sprintf("%s/blog/%s", h.cfg.SiteURL, post.Slug),
-			Description: post.Description,
-			PubDate:     func() string { if post.PublishedAt != nil { return post.PublishedAt.UTC().Format(time.RFC1123Z) }; return "" }(),
-			GUID:        fmt.Sprintf("%s/blog/%s", h.cfg.SiteURL, post.Slug),
+			Title:          post.Title,
+			Link:           fmt.Sprintf("%s/blog/%s", h.cfg.SiteURL, post.Slug),
+			Description:    post.Description,
+			ContentEncoded: post.ContentHTML,
+			PubDate: func() string {
+				if post.PublishedAt != nil {
+					return post.PublishedAt.UTC().Format(time.RFC1123Z)
+				}
+				return ""
+			}(),
+			GUID: fmt.Sprintf("%s/blog/%s", h.cfg.SiteURL, post.Slug),
 		}
 		feed.Channel.Items = append(feed.Channel.Items, item)
 	}
@@ -69,10 +76,11 @@ func Health(w http.ResponseWriter, r *http.Request) {
 }
 
 type rssRoot struct {
-	XMLName xml.Name   `xml:"rss"`
-	Version string     `xml:"version,attr"`
-	AtomNS  string     `xml:"xmlns:atom,attr"`
-	Channel rssChannel `xml:"channel"`
+	XMLName   xml.Name   `xml:"rss"`
+	Version   string     `xml:"version,attr"`
+	AtomNS    string     `xml:"xmlns:atom,attr"`
+	ContentNS string     `xml:"xmlns:content,attr"`
+	Channel   rssChannel `xml:"channel"`
 }
 
 type rssChannel struct {
@@ -92,10 +100,11 @@ type atomLink struct {
 }
 
 type rssItem struct {
-	XMLName     xml.Name `xml:"item"`
-	Title       string   `xml:"title"`
-	Link        string   `xml:"link"`
-	Description string   `xml:"description"`
-	PubDate     string   `xml:"pubDate"`
-	GUID        string   `xml:"guid"`
+	XMLName        xml.Name `xml:"item"`
+	Title          string   `xml:"title"`
+	Link           string   `xml:"link"`
+	Description    string   `xml:"description"`
+	ContentEncoded string   `xml:"content:encoded"`
+	PubDate        string   `xml:"pubDate"`
+	GUID           string   `xml:"guid"`
 }

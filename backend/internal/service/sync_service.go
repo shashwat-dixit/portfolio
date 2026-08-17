@@ -23,6 +23,7 @@ type SyncService struct {
 	tagRepo  *repository.TagRepo
 	md       *MarkdownService
 	cache    *cache.RedisCache
+	synd     *SyndicationService
 }
 
 func NewSyncService(
@@ -31,8 +32,9 @@ func NewSyncService(
 	tagRepo *repository.TagRepo,
 	md *MarkdownService,
 	cache *cache.RedisCache,
+	synd *SyndicationService,
 ) *SyncService {
-	return &SyncService{cfg: cfg, postRepo: postRepo, tagRepo: tagRepo, md: md, cache: cache}
+	return &SyncService{cfg: cfg, postRepo: postRepo, tagRepo: tagRepo, md: md, cache: cache, synd: synd}
 }
 
 func (s *SyncService) Sync(ctx context.Context) (*model.SyncResult, error) {
@@ -153,6 +155,10 @@ func (s *SyncService) Sync(ctx context.Context) (*model.SyncResult, error) {
 
 	if err := s.cache.FlushBlog(ctx); err != nil {
 		slog.Warn("flush cache failed", "error", err)
+	}
+
+	if s.synd != nil && s.synd.Enabled() {
+		result.Medium, result.Substack = s.synd.Syndicate(ctx)
 	}
 
 	return result, nil

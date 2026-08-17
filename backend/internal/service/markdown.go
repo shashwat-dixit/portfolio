@@ -64,6 +64,15 @@ func (s *MarkdownService) Parse(raw []byte) (*model.Frontmatter, string, int, er
 	return &frontmatter, buf.String(), wordCount, nil
 }
 
+// MarkdownBody returns the markdown article with YAML frontmatter stripped.
+func MarkdownBody(raw string) string {
+	_, body, err := splitFrontmatter([]byte(raw))
+	if err != nil {
+		return strings.TrimSpace(raw)
+	}
+	return strings.TrimSpace(string(body))
+}
+
 func splitFrontmatter(raw []byte) ([]byte, []byte, error) {
 	content := string(raw)
 	content = strings.TrimLeftFunc(content, unicode.IsSpace)
