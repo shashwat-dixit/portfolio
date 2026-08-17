@@ -37,6 +37,7 @@ type Props = {
   websiteUrl?: string;
   githubUrl?: string;
   className?: string;
+  variant?: "badge" | "ghost";
 };
 
 const SHARE_ICONS: Record<
@@ -93,6 +94,7 @@ export function ProjectShareButton({
   websiteUrl,
   githubUrl,
   className,
+  variant = "badge",
 }: Props) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -263,17 +265,26 @@ export function ProjectShareButton({
         aria-expanded={open}
         aria-controls={menuId}
         aria-label={`Share ${title}`}
-        className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="rounded-md touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
-        <Badge
-          className="flex items-center gap-1.5 text-xs bg-black text-white hover:bg-black/90"
-          variant="default"
-        >
-          <Share2 className="size-3" aria-hidden />
-          Share
-        </Badge>
+        {variant === "ghost" ? (
+          <span className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+            <Share2 className="size-3.5" aria-hidden />
+            Share
+          </span>
+        ) : (
+          <Badge
+            className="flex items-center gap-1.5 text-xs bg-black text-white hover:bg-black/90"
+            variant="default"
+          >
+            <Share2 className="size-3" aria-hidden />
+            Share
+          </Badge>
+        )}
       </button>
       {menu}
     </div>
   );
 }
+
+export const ShareButton = ProjectShareButton;
