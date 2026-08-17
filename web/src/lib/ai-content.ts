@@ -1,4 +1,5 @@
 export const MARKDOWN_CONTENT_TYPE = "text/markdown; charset=utf-8";
+export const PLAIN_TEXT_CONTENT_TYPE = "text/plain; charset=utf-8";
 
 const AI_USER_AGENTS = [
   "gptbot",
@@ -89,6 +90,13 @@ export function markdownHeaders(): HeadersInit {
     "Content-Type": MARKDOWN_CONTENT_TYPE,
     "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
     Vary: "Accept, User-Agent",
+  };
+}
+
+export function plainTextHeaders(): HeadersInit {
+  return {
+    "Content-Type": PLAIN_TEXT_CONTENT_TYPE,
+    "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
   };
 }
 

@@ -393,7 +393,7 @@ The public site serves markdown that ChatGPT, Claude, and similar agents can rea
 | `/blog/<slug>.md` | Original post markdown, including YAML frontmatter |
 | `/robots.txt` | Allows GPTBot / ChatGPT-User and points at `/llms.txt` |
 
-The same HTML URLs also return markdown when the client sends `Accept: text/markdown` or a known AI user-agent (`ChatGPT-User`, `GPTBot`, `OAI-SearchBot`, and similar). Normal browsers still get HTML. The homepage is prerendered, so agents should use `/index.md` (linked from `/llms.txt`) rather than negotiating `/`.
+The same HTML URLs also return markdown when the client sends `Accept: text/markdown` or a known AI user-agent (`ChatGPT-User`, `GPTBot`, `OAI-SearchBot`, and similar). Normal browsers still get HTML. The homepage is prerendered, so agents should use `/index.md` (linked from `/llms.txt`) rather than negotiating `/`. `/llms.txt` and `/llms-full.txt` are served as `text/plain` (ChatGPT's fetcher rejects a `.txt` URL labeled `text/markdown`). `.md` pages stay `text/markdown`.
 
 The API has the same post source:
 

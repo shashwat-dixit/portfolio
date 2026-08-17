@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { getAllPosts, getPostBySlug } from "@/lib/api";
-import { buildLlmsFullTxt, markdownHeaders } from "@/lib/ai-content";
+import { buildLlmsFullTxt, plainTextHeaders } from "@/lib/ai-content";
 import { homepageMarkdown } from "@/lib/homepage-md";
 
 export const GET: APIRoute = async () => {
@@ -29,5 +29,5 @@ export const GET: APIRoute = async () => {
   );
 
   const body = buildLlmsFullTxt(homepageMarkdown(), withBodies);
-  return new Response(body, { headers: markdownHeaders() });
+  return new Response(body, { headers: plainTextHeaders() });
 };
