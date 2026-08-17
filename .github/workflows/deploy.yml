@@ -43,6 +43,7 @@ jobs:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
       - run: go vet ./...
+      - run: go test ./...
       - run: go build ./...
 
   test-frontend:
@@ -64,6 +65,7 @@ jobs:
           cache-dependency-path: web/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm rebuild esbuild
+      - run: pnpm test
       - run: pnpm build
         env:
           PUBLIC_API_URL: https://api.shashwatdixit.com

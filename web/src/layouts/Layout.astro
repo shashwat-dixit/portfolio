@@ -14,6 +14,7 @@ interface Props {
   ogTitle?: string;
   ogType?: string;
   publishedTime?: string;
+  markdownURL?: string;
 }
 
 const {
@@ -24,6 +25,7 @@ const {
   ogTitle,
   ogType = "website",
   publishedTime,
+  markdownURL,
 } = Astro.props;
 
 const pageTitle = title
@@ -142,6 +144,10 @@ const { baseFontSize } = CONFIG.typography;
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL} />
+    <link rel="alternate" type="text/markdown" href={`${CONFIG.site.url}/llms.txt`} title="llms.txt" />
+    {markdownURL && (
+      <link rel="alternate" type="text/markdown" href={markdownURL} title="Markdown" />
+    )}
 
     <!-- Robots -->
     <meta name="robots" content={CONFIG.seo.robots} />

@@ -5,6 +5,7 @@ import BlogTOC from "@/components/BlogTOC";
 import { ShareButton } from "@/components/project-share-button";
 import { getPostBySlug } from "@/lib/api";
 import { blogPostOgImagePath } from "@/lib/og";
+import { CONFIG } from "@/data/config";
 
 const { slug } = Astro.params;
 
@@ -40,6 +41,7 @@ const publishedTime =
   ogTitle={post.title}
   ogType="article"
   publishedTime={publishedTime}
+  markdownURL={`${CONFIG.site.url}/blog/${slug}.md`}
 >
   <ReadingProgress client:load slug={slug} />
   <BlogTOC client:load contentHtml={post.contentHtml} />
