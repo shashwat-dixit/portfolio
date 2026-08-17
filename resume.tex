@@ -1,0 +1,199 @@
+\documentclass[letterpaper,11pt]{article}
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage{fontawesome5}
+\usepackage{multicol}
+\setlength{\multicolsep}{-3.0pt}
+\setlength{\columnsep}{-1pt}
+\input{glyphtounicode}
+\usepackage{siunitx}
+
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Adjust margins
+\addtolength{\oddsidemargin}{-0.6in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1.19in}
+\addtolength{\topmargin}{-.7in}
+\addtolength{\textheight}{1.4in}
+
+\urlstyle{same}
+
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+% Sections formatting
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large\bfseries
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+% Ensure that generate pdf is machine readable/ATS parsable
+\pdfgentounicode=1
+
+%-------------------------
+% Custom commands
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\classesList}[4]{
+    \item\small{
+        {#1 #2 #3 #4 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{1.0\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & \textbf{\small #2} \\ 
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubSubheading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \textit{\small#1} & \textit{\small #2} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeProjectHeadingWithLinks}[3]{
+    \item
+    \begin{tabular*}{1.001\textwidth}{l@{\extracolsep{\fill}}r}
+      \small\textbf{#1}\\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
+
+\renewcommand\labelitemi{$\vcenter{\hbox{\tiny$\bullet$}}$}
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.0in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+%-------------------------------------------------------
+%%%%%%  RESUME STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\begin{center}
+    {\Huge \scshape Shashwat Dixit} \\ \vspace{1pt}
+    Bengaluru, India \\ \vspace{1pt}
+    \small 
+    \href{tel:+918957058063}{\raisebox{-0.1\height}\faPhone\ \underline{+91-8957058063}}~
+    \href{mailto:shashwatmain@gmail.com}{\raisebox{-0.2\height}\faEnvelope\  \underline{shashwatmain@gmail.com}} ~ 
+    \href{https://linkedin.com/in/dixitshashwat/}{\raisebox{-0.2\height}\faLinkedin\ \underline{LinkedIn}}  ~
+    \href{https://github.com/shashwatt-codes}{\raisebox{-0.2\height}\faGithub\ \underline{GitHub}}
+    \vspace{-6pt}
+\end{center}
+
+%-----------EXPERIENCE-----------
+\section{Experience}
+\resumeSubHeadingListStart
+\resumeSubheading
+  {\textbf{Interview Kickstart}}{Jun 2026 -- Present}
+  {\textbf{SDE-1}}{Full-Time}
+  \resumeItemListStart
+    \resumeItem{Fixed \textbf{5 payment-gateway defects} against the live API format, stopping real transactions from silently falling back to a backup provider.}
+    \resumeItem{Fixed a \textbf{double-counting bug} in \textbf{installment balance logic} that was silently rejecting valid payments.}
+    \resumeItem{Shipped a \textbf{feature-flagged payment-flow rewrite} with old and new systems running side-by-side for \textbf{instant rollback}.}
+    \resumeItem{Cut \textbf{learner activation delay} by granting access on payment completion, with a \textbf{30-day auto-revoke} if payment is never confirmed.}
+  \resumeItemListEnd
+\resumeSubheading
+  {\textbf{Instahyre}}{Dec 2024 -- May 2026}
+  {\textbf{SDE-1}}{Full-Time}
+  \resumeItemListStart
+    \resumeItem{Designed \textbf{Redis-based distributed locking} using atomic \textbf{SETNX + TTL} to prevent race conditions, \textbf{eliminating double-booking incidents} under concurrent traffic.}
+    \resumeItem{Reduced query latency and \textbf{eliminated full table scans} by designing \textbf{composite PostgreSQL indexes}, enabling \textbf{100\% index utilization}.}
+    \resumeItem{Improved employer-facing REST API latency by \textbf{80\% (p75: 600ms $\rightarrow$ 120ms)} by profiling slow \textbf{PostgreSQL} queries and optimizing \textbf{response payload construction} for high-traffic endpoints.}
+    \resumeItem{Built \textbf{stack-based boolean query parser} (AND/OR/NOT) enabling advanced skill matching directly within \textbf{Elasticsearch} queries, improving matching relevance by \textbf{20\%}.}
+    \resumeItem{Reduced \textbf{regression bugs by 30\%} and streamlined deployments by \textbf{modularizing three major applications} from a monolithic codebase into independently maintainable components.}
+  \resumeItemListEnd
+\resumeSubheading
+  {\textbf{Pummyz Foods}}{May 2024 -- Aug 2024}
+  {\textbf{Full-Stack Developer}}{Full-Time Contractor}
+  \resumeItemListStart
+    \resumeItem{Enabled reliable \textbf{asynchronous order processing} for \textbf{thousands of daily events} by designing an \textbf{event-driven pipeline} using \textbf{Kafka} for order creation, status updates, and downstream service notifications.}
+    \resumeItem{Implemented \textbf{payment confirmation via webhooks}, designing \textbf{idempotent order state updates} to safely handle retry events, reducing \textbf{duplicate order processing by 95\%}.}
+    \resumeItem{Reduced \textbf{media load times by 30\%} by integrating \textbf{AWS S3 with CDN caching}, enabling efficient delivery of high-resolution assets.}
+    \resumeItem{Improved \textbf{Core Web Vitals by 35\%} by implementing a \textbf{Next.js SSR} architecture optimized for faster \textbf{first-contentful paint} and reduced JS bundle size.}
+  \resumeItemListEnd
+
+%-----------PROJECTS----------- 
+\section{Projects}
+\vspace{-10pt}
+  \resumeSubHeadingListStart 
+  \resumeProjectHeadingWithLinks 
+    {\textbf{Jamin - Fast, Helpful AI Chat}}
+    {} {} 
+    \vspace{-8pt}
+    \resumeItemListStart
+      \resumeItem{Developed \textbf{full-stack AI platform} integrating \textbf{multiple LLMs} (\textbf{GPT}, \textbf{Claude}, \textbf{Cohere}) using \textbf{LangChain} and \textbf{React/Node.js}.} 
+      \resumeItem{Implemented \textbf{RAG} for PDF Q\&A and YouTube summarization, plus \textbf{Stable Diffusion} for \textbf{image generation}.} 
+      \resumeItem{Designed \textbf{scalable database} with \textbf{PostgreSQL}/\textbf{Drizzle}, enabling \textbf{context-aware conversations} across multiple models.} 
+    \resumeItemListEnd 
+    \vspace{-10pt}
+  \resumeProjectHeadingWithLinks 
+    {Zort - Collaborative Whiteboarding Tool}
+    {} {}
+    \vspace{-8pt}
+    \resumeItemListStart 
+      \resumeItem{Architected a \textbf{real-time} collaborative whiteboard using \textbf{Next.js} and \textbf{Socket.IO}, supporting \textbf{100+} concurrent users.} 
+      \resumeItem{Implemented client-side state management using \textbf{Zustand} and \textbf{localStorage}, reducing server load.} 
+      \resumeItem{Engineered \textbf{CI/CD} pipeline using \textbf{Docker} and \textbf{GitHub Actions}, automating build and deployment processes with zero failures.}
+    \resumeItemListEnd 
+    \resumeSubHeadingListEnd
+
+%-----------EDUCATION-----------
+\section{Education}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {Nitte Meenakshi Institute of Technology, Bengaluru}{2020 -- 2024}
+      {Bachelor of Engineering in Electrical \& Electronics Engineering}{}
+  \resumeSubHeadingListEnd
+
+
+%-----------TECHNICAL SKILLS-----------
+\section{Technical Skills}
+ \begin{itemize}[leftmargin=0.15in, label={}, itemsep=-5pt]
+    \small{\item{
+     \textbf{Languages}{: Python, C++, Go, JavaScript, TypeScript} \\
+     \textbf{Developer Tools}{: Git, GCP, AWS, Docker, Kubernetes} \\
+     \textbf{Technologies}{: React, Next.js, Node.js, Bun.js, Elasticsearch, Django, RabbitMQ, Kafka}  \\
+     \textbf{Databases}{: PostgreSQL, Redis, Cassandra, MySQL, SQL}
+    }}
+    \vspace{-5pt}
+ \end{itemize}
+
+%-----------ACHIEVEMENTS---------------
+\section{Achievements}
+    \resumeSubHeadingListStart
+        \resumeItemListStart
+            \resumeItem{Authored \textbf{two research papers} on \textbf{Quantum Computing} using Qiskit for \textbf{IEEE conferences}.}
+            \resumeItem{\textbf{Won Best Innovation Award} for Major Project 2024, \textbf{ranking first among 75 students across 24 teams}.}
+            \resumeItem{Named among \textbf{Top 3} All-Rounders out of 200 students on HoD's Honor Roll (2023).}
+            \resumeItem{Ranked in \textbf{top} \SI{5}{\percent} in NPTEL's 'Joy of Computing' course (2023).}
+            \resumeItem{\textbf{Winner} in Machine Learning Track at Mini Hackathon NMIT'22.}
+            \resumeItem{\textbf{Marketing Head} for \textbf{NASA Space Apps Challenge} 2023; secured \textbf{5 partnerships} to expand event resources.}
+        \resumeItemListEnd
+    \resumeSubHeadingListEnd
+\end{document}
