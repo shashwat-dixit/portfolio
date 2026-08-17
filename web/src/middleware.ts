@@ -2,7 +2,9 @@ import { defineMiddleware } from "astro:middleware";
 import { markdownRewritePath } from "@/lib/ai-content";
 
 export const onRequest = defineMiddleware(async (ctx, next) => {
-  const rewriteTo = markdownRewritePath(ctx.url.pathname, ctx.request);
+  const rewriteTo = ctx.isPrerendered
+    ? null
+    : markdownRewritePath(ctx.url.pathname, ctx.request);
   const response = rewriteTo ? await ctx.rewrite(rewriteTo) : await next();
 
   response.headers.set("X-Content-Type-Options", "nosniff");
