@@ -35,3 +35,16 @@ func TestWantsMarkdown(t *testing.T) {
 		})
 	}
 }
+
+func TestAgentBodyContentType(t *testing.T) {
+	plain := httptest.NewRequest(http.MethodGet, "/api/posts/slug?format=md", nil)
+	if got := agentBodyContentType(plain); got != "text/plain; charset=utf-8" {
+		t.Fatalf("format=md Content-Type = %q, want text/plain", got)
+	}
+
+	md := httptest.NewRequest(http.MethodGet, "/api/posts/slug", nil)
+	md.Header.Set("Accept", "text/markdown")
+	if got := agentBodyContentType(md); got != "text/markdown; charset=utf-8" {
+		t.Fatalf("Accept markdown Content-Type = %q, want text/markdown", got)
+	}
+}

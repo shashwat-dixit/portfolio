@@ -63,9 +63,10 @@ func (h *PostHandler) GetBySlug(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800")
 
-	// Agents can request raw markdown via Accept: text/markdown or ?format=md
+	// Agents can request raw markdown via Accept: text/markdown or ?format=md.
+	// Default to text/plain: ChatGPT's fetcher returns 400 for text/markdown.
 	if wantsMarkdown(r) {
-		w.Header().Set("Content-Type", "text/markdown; charset=utf-8")
+		w.Header().Set("Content-Type", agentBodyContentType(r))
 		w.Write([]byte(post.ContentMD))
 		return
 	}
@@ -92,6 +93,10 @@ func wantsMarkdown(r *http.Request) bool {
 	if r.URL.Query().Get("format") == "md" {
 		return true
 	}
+	return acceptsMarkdownType(r)
+}
+
+func acceptsMarkdownType(r *http.Request) bool {
 	accept := r.Header.Get("Accept")
 	if accept == "" {
 		return false
@@ -104,4 +109,11 @@ func wantsMarkdown(r *http.Request) bool {
 		}
 	}
 	return false
+}
+
+func agentBodyContentType(r *http.Request) string {
+	if acceptsMarkdownType(r) {
+		return "text/markdown; charset=utf-8"
+	}
+	return "text/plain; charset=utf-8"
 }

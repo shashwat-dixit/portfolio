@@ -3,7 +3,7 @@ import { CONFIG } from "@/data/config";
 import { getAllPosts } from "@/lib/api";
 import { buildBlogIndexMarkdown, markdownHeaders } from "@/lib/ai-content";
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ request }) => {
   let posts: Awaited<ReturnType<typeof getAllPosts>> = [];
   try {
     posts = await getAllPosts();
@@ -12,6 +12,6 @@ export const GET: APIRoute = async () => {
   }
 
   return new Response(buildBlogIndexMarkdown(CONFIG.site.url, posts), {
-    headers: markdownHeaders(),
+    headers: markdownHeaders(request),
   });
 };
