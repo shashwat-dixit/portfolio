@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { getPostBySlug } from "@/lib/api";
 import { looksLikePostMarkdown, markdownHeaders } from "@/lib/ai-content";
 
-export const GET: APIRoute = async ({ params }) => {
+export const GET: APIRoute = async ({ params, request }) => {
   const slug = params.slug;
   if (!slug) {
     return new Response("Not found\n", { status: 404 });
@@ -19,7 +19,7 @@ export const GET: APIRoute = async ({ params }) => {
     }
 
     return new Response(body.endsWith("\n") ? body : `${body}\n`, {
-      headers: markdownHeaders(),
+      headers: markdownHeaders(request),
     });
   } catch {
     return new Response("Not found\n", { status: 404 });

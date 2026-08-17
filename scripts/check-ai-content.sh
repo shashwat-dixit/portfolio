@@ -42,6 +42,8 @@ robots="$(fetch "${SITE_URL}/robots.txt")"
 [[ "$robots" == *"/llms.txt"* ]] || fail "/robots.txt should point at llms.txt"
 echo "  /robots.txt OK"
 
+index_type="$(content_type "${SITE_URL}/index.md")"
+[[ "$index_type" == text/plain* ]] || fail "/index.md Content-Type should be text/plain, got '${index_type}'"
 home_md="$(fetch "${SITE_URL}/index.md")"
 [[ "$home_md" == \#* ]] || fail "/index.md should start with a markdown heading"
 echo "  /index.md OK"
@@ -52,6 +54,8 @@ echo "  Accept: text/markdown on /blog OK"
 
 home_ua="$(curl -fsS -A 'ChatGPT-User/1.0' "${SITE_URL}/blog")"
 [[ "$home_ua" == \#* ]] || fail "ChatGPT-User on /blog should return markdown, not HTML"
+ua_type="$(content_type -A 'ChatGPT-User/1.0' "${SITE_URL}/blog")"
+[[ "$ua_type" == text/plain* ]] || fail "ChatGPT-User on /blog Content-Type should be text/plain, got '${ua_type}'"
 echo "  ChatGPT-User on /blog OK"
 
 browser_home="$(curl -fsS -H 'Accept: text/html' -A 'Mozilla/5.0' "${SITE_URL}/")"
@@ -62,12 +66,16 @@ slug="$(printf '%s\n' "$llms" | sed -n 's/.*\/blog\/\([^)]*\)\.md.*/\1/p' | head
 if [[ -z "${slug}" ]]; then
   echo "  No blog posts listed in llms.txt yet; skipping post checks."
 else
+  post_type="$(content_type "${SITE_URL}/blog/${slug}.md")"
+  [[ "$post_type" == text/plain* ]] || fail "/blog/${slug}.md Content-Type should be text/plain, got '${post_type}'"
   post_md="$(fetch "${SITE_URL}/blog/${slug}.md")"
   [[ "$post_md" == ---* ]] || fail "/blog/${slug}.md should start with YAML frontmatter"
   [[ "$post_md" == *"title:"* ]] || fail "/blog/${slug}.md frontmatter should include title"
   [[ "$post_md" == *"slug:"* ]] || fail "/blog/${slug}.md frontmatter should include slug"
   echo "  /blog/${slug}.md OK"
 
+  api_md_type="$(content_type "${API_URL}/api/posts/${slug}?format=md")"
+  [[ "$api_md_type" == text/plain* ]] || fail "API ?format=md Content-Type should be text/plain, got '${api_md_type}'"
   api_md="$(fetch "${API_URL}/api/posts/${slug}?format=md")"
   [[ "$api_md" == ---* ]] || fail "API ?format=md should return markdown with frontmatter"
   echo "  API ?format=md OK"

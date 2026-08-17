@@ -31,7 +31,15 @@ export function wantsMarkdown(request: Request): boolean {
   if (url.searchParams.get("format") === "md") {
     return true;
   }
+  if (acceptsMarkdownType(request)) {
+    return true;
+  }
 
+  const ua = (request.headers.get("User-Agent") ?? "").toLowerCase();
+  return AI_USER_AGENTS.some((bot) => ua.includes(bot));
+}
+
+export function acceptsMarkdownType(request: Request): boolean {
   const accept = request.headers.get("Accept") ?? "";
   for (const part of accept.split(",")) {
     const mediaType = part.trim().split(";")[0]?.trim().toLowerCase();
@@ -39,9 +47,7 @@ export function wantsMarkdown(request: Request): boolean {
       return true;
     }
   }
-
-  const ua = (request.headers.get("User-Agent") ?? "").toLowerCase();
-  return AI_USER_AGENTS.some((bot) => ua.includes(bot));
+  return false;
 }
 
 export function markdownRewritePath(pathname: string, request: Request): string | null {
@@ -85,9 +91,13 @@ export function markdownRewritePath(pathname: string, request: Request): string 
   return null;
 }
 
-export function markdownHeaders(): HeadersInit {
+export function markdownHeaders(request?: Request): HeadersInit {
+  // ChatGPT's web reader rejects text/markdown with HTTP 400.
+  // Serve plain text unless the client explicitly asked for markdown.
+  const type =
+    request && acceptsMarkdownType(request) ? MARKDOWN_CONTENT_TYPE : PLAIN_TEXT_CONTENT_TYPE;
   return {
-    "Content-Type": MARKDOWN_CONTENT_TYPE,
+    "Content-Type": type,
     "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
     Vary: "Accept, User-Agent",
   };
@@ -241,7 +251,7 @@ export function buildSitemapXml(siteUrl: string, slugs: string[], lastmod?: stri
       const alts = extra
         .map(
           (href) =>
-            `    <xhtml:link rel="alternate" type="text/markdown" href="${escapeXml(href)}" />`
+            `    <xhtml:link rel="alternate" type="text/plain" href="${escapeXml(href)}" />`
         )
         .join("\n");
       return `  <url>\n    <loc>${escapeXml(loc)}</loc>${lastmodTag}${alts ? `\n${alts}` : ""}\n  </url>`;

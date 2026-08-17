@@ -157,14 +157,22 @@ slug: django-orm-query-optimization
     assert.match(xml, /<loc>https:\/\/shashwatdixit\.com\/blog\/django-orm-query-optimization<\/loc>/);
     assert.match(
       xml,
-      /type="text\/markdown" href="https:\/\/shashwatdixit\.com\/blog\/django-orm-query-optimization\.md"/
+      /type="text\/plain" href="https:\/\/shashwatdixit\.com\/blog\/django-orm-query-optimization\.md"/
     );
   });
 
-  it("serves llms.txt as text/plain so ChatGPT fetchers accept a .txt URL", () => {
+  it("serves agent markdown as text/plain unless markdown is explicitly accepted", () => {
     const headers = new Headers(plainTextHeaders());
     assert.equal(headers.get("Content-Type"), "text/plain; charset=utf-8");
-    const mdHeaders = new Headers(markdownHeaders());
-    assert.equal(mdHeaders.get("Content-Type"), "text/markdown; charset=utf-8");
+    assert.equal(
+      new Headers(markdownHeaders()).get("Content-Type"),
+      "text/plain; charset=utf-8"
+    );
+    assert.equal(
+      new Headers(
+        markdownHeaders(request("/blog/slug.md", { Accept: "text/markdown" }))
+      ).get("Content-Type"),
+      "text/markdown; charset=utf-8"
+    );
   });
 });
