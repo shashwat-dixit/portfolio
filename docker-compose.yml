@@ -59,6 +59,23 @@ services:
     depends_on:
       - backend
 
+  tui:
+    build:
+      context: ./tui
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "2222:2222"
+    environment:
+      SSH_LISTEN: ":2222"
+      SSH_HOST_KEY: /data/ssh/id_ed25519
+      API_URL: http://backend:8080
+      SITE_URL: https://shashwatdixit.com
+    volumes:
+      - tui_ssh:/data/ssh
+    depends_on:
+      - backend
+
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
@@ -77,3 +94,4 @@ volumes:
   pgdata:
   caddy_data:
   caddy_config:
+  tui_ssh:

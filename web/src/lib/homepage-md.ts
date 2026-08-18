@@ -10,6 +10,8 @@ export function homepageMarkdown(): string {
     "",
     `${DATA.location}. [Website](${origin}) · [Email](mailto:${DATA.contact.email})`,
     "",
+    `Prefer the terminal? \`${CONFIG.site.sshCommand}\``,
+    "",
     "## About",
     "",
     DATA.summary,

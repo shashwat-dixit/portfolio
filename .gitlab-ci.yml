@@ -37,6 +37,20 @@ test:frontend:
     - changes:
         - web/**/*
 
+test:tui:
+  stage: test
+  image: golang:1.26-alpine
+  before_script:
+    - apk add --no-cache git
+  script:
+    - cd tui
+    - go vet ./...
+    - go test ./...
+    - go build ./...
+  rules:
+    - changes:
+        - tui/**/*
+
 # --------------------------------------------------------------------------
 # Build stage — Docker images
 # --------------------------------------------------------------------------

@@ -1,6 +1,10 @@
 # Portfolio — Shashwat Dixit
 
-Personal portfolio and blog. Go backend syncs markdown from GitLab, stores in PostgreSQL with Redis caching, serves via REST API. Astro frontend renders the portfolio and blog at `shashwatdixit.com`.
+Personal portfolio and blog. Go backend syncs markdown from GitLab, stores in PostgreSQL with Redis caching, serves via REST API. Astro frontend renders the portfolio and blog at `shashwatdixit.com`. A Bubble Tea TUI serves the same content over SSH:
+
+```bash
+ssh shashwatdixit.com -p 2222
+```
 
 ## System Architecture
 
@@ -25,17 +29,13 @@ Personal portfolio and blog. Go backend syncs markdown from GitLab, stores in Po
                                    │  └────────┘                          │
                                    └──────────────┬───────────────────────┘
                                                   │ JSON
-                                                  ▼
-                                   ┌──────────────────────────────────────┐
-                                   │      Astro Frontend (:4321)          │
-                                   │                                      │
-                                   │  shashwatdixit.com      → portfolio  │
-                                   │  shashwatdixit.com/blog → blog list  │
-                                   │  shashwatdixit.com/blog/:slug → post │
-                                   │                                      │
-                                   │  Fuse.js client-side search          │
-                                   │  localStorage reading progress       │
-                                   └──────────────────────────────────────┘
+                          ┌───────────────────────┼───────────────────────┐
+                          ▼                       ▼                       ▼
+              ┌───────────────────┐   ┌─────────────────────┐   ┌─────────────────┐
+              │ Astro Frontend    │   │ SSH TUI (:2222)     │   │ Agents / curl   │
+              │ (:4321)           │   │ Wish + Bubble Tea   │   │ /index.md       │
+              │ shashwatdixit.com │   │ ssh host -p 2222    │   │ /llms.txt       │
+              └───────────────────┘   └─────────────────────┘   └─────────────────┘
 ```
 
 ## Tech Stack
@@ -52,6 +52,7 @@ Personal portfolio and blog. Go backend syncs markdown from GitLab, stores in Po
 | **Fonts** | Fontsource variable — Outfit (sans), Geist Mono (mono) |
 | **Animation** | Motion (Framer Motion successor) |
 | **Theming** | next-themes (light/dark, system detection) |
+| **TUI / SSH** | Wish + Bubble Tea v2, Lip Gloss, Glamour (`ssh shashwatdixit.com -p 2222`) |
 
 ## Directory Structure
 
@@ -88,6 +89,17 @@ portfolio/
 │   │       └── redis.go             # Redis client, key patterns, invalidation
 │   ├── migrations/
 │   │   └── 001_initial.sql          # DDL for posts, tags, post_tags
+│   ├── Dockerfile
+│   ├── go.mod
+│   └── go.sum
+│
+├── tui/                              # SSH terminal UI
+│   ├── cmd/tui/main.go              # local TTY or Wish SSH server
+│   ├── internal/
+│   │   ├── profile/                 # portfolio copy (mirrors resume.tsx)
+│   │   ├── api/                     # blog client for the Go REST API
+│   │   ├── ui/                      # Bubble Tea app
+│   │   └── server/                  # Wish SSH server
 │   ├── Dockerfile
 │   ├── go.mod
 │   └── go.sum
@@ -321,13 +333,14 @@ The remaining values (PostgreSQL, Redis, CORS) are overridden by `docker-compose
 docker compose -f docker-compose.local.yml up -d
 ```
 
-This starts three containers:
+This starts four containers:
 
 | Service    | Port   | Details                          |
 | ---------- | ------ | -------------------------------- |
 | PostgreSQL | `5432` | User `postgres`, password `postgres`, DB `portfolio` |
 | Redis      | `6379` | No password                      |
 | Backend    | `8080` | Go API server                    |
+| TUI        | `2222` | SSH portfolio (`ssh -p 2222 localhost`) |
 
 The backend auto-runs database migrations on startup.
 
@@ -358,11 +371,29 @@ pnpm dev
 
 Open <http://localhost:4321>. The frontend fetches data from the backend at `http://localhost:8080`.
 
+### 5. SSH TUI (optional)
+
+The same portfolio and blog run in a terminal. With the local compose stack up:
+
+```bash
+ssh -p 2222 localhost
+```
+
+Any username works; there is no password. On first connect, accept the host key. Number keys jump sections, `j`/`k` scroll, `q` quits. `ssh -T -p 2222 localhost` dumps markdown if you do not have a TTY.
+
+To run the TUI in your current terminal without SSH:
+
+```bash
+cd tui
+go run ./cmd/tui --local --api http://localhost:8080
+```
+
 ### Verify everything works
 
 - **Blog listing**: <http://localhost:4321/blog>
 - **Health check**: <http://localhost:8080/api/health>
 - **API posts**: <http://localhost:8080/api/posts>
+- **SSH TUI**: `ssh -p 2222 localhost`
 - **AI markdown**: see [Testing AI / ChatGPT access](#testing-ai--chatgpt-access)
 
 ### Stopping
@@ -461,12 +492,17 @@ You can also paste the raw `/llms.txt` or `/blog/<slug>.md` body into ChatGPT if
 │    ├─ shashwatdixit.com     → Astro (:4321)      │
 │    └─ api.shashwatdixit.com → Go backend (:8080) │
 │                                                  │
+│  SSH TUI                    → :2222              │
+│    ssh shashwatdixit.com -p 2222                 │
+│                                                  │
 │  PostgreSQL (:5432)                              │
 │  Redis (:6379)                                   │
 │                                                  │
 │  All services via docker-compose                 │
 └─────────────────────────────────────────────────┘
 ```
+
+The EC2 security group must allow inbound **TCP 2222** from the internet for the TUI, in addition to **TCP 22** (admin SSH), **80**, and **443**.
 
 ### GitHub Actions (push to `main`)
 
@@ -622,10 +658,11 @@ The clone on the box should already be at `~/portfolio` with Docker Compose and 
 - [X] Cache the landing page and utilize bf cache when navigating back from blog
 - [x] Fix the click on dark mode button
 - [x] Serve markdown / llms.txt so ChatGPT and other agents can read the site
+- [x] SSH TUI (`ssh shashwatdixit.com -p 2222`)
 
 ### DevOps
 
-- [x] `docker-compose.yml` — Go backend, Astro, PostgreSQL, Redis
+- [x] `docker-compose.yml` — Go backend, Astro, SSH TUI, PostgreSQL, Redis
 - [x] Caddy / Nginx reverse proxy config
 - [x] Option To Trigger Deploy and Trigger Gitlab Repo Pull (via POST /api/sync + GitHub Actions)
 - [x] Cron job for weekly sync (GitHub Actions schedule)
