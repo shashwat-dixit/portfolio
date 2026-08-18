@@ -32,3 +32,6 @@ pnpm-debug.log*
 #pnpn
 .pnpm-store/
 Resume.pdf
+
+# TUI SSH host keys (generated locally / in the Docker volume)
+tui/.ssh/

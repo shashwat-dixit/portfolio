@@ -124,6 +124,7 @@ slug: django-orm-query-optimization
       body,
       /https:\/\/shashwatdixit\.com\/blog\/django-orm-query-optimization\.md/
     );
+    assert.match(body, /ssh shashwatdixit\.com -p 2222/);
   });
 
   it("keeps post frontmatter in the full dump", () => {

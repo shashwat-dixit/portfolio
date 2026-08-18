@@ -13,7 +13,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "generate-og": "node scripts/generate-og.mjs",
-    "test": "node --experimental-strip-types --test src/lib/ai-content.test.ts"
+    "test": "node --experimental-strip-types --test src/lib/*.test.ts"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.2",

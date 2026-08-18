@@ -49,5 +49,24 @@ services:
       redis:
         condition: service_healthy
 
+  tui:
+    build:
+      context: ./tui
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "2222:2222"
+    environment:
+      SSH_LISTEN: ":2222"
+      SSH_HOST_KEY: /data/ssh/id_ed25519
+      API_URL: http://backend:8080
+      SITE_URL: http://localhost:4321
+    volumes:
+      - tui_ssh:/data/ssh
+    depends_on:
+      backend:
+        condition: service_started
+
 volumes:
   pgdata:
+  tui_ssh:

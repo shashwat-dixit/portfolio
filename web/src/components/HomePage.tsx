@@ -10,6 +10,7 @@ import PhotosSection from "@/components/section/photos-section";
 import ProjectsSection from "@/components/section/projects-section";
 import SkillsSection from "@/components/section/skills-section";
 import WorkTimelineSection from "@/components/section/work-timeline-section";
+import SshBanner from "@/components/section/ssh-banner";
 
 const BLUR_FADE_DELAY = 0.04;
 
@@ -91,6 +92,11 @@ export default function HomePage() {
             </BlurFade>
           </div>
         </div>
+      </section>
+      <section id="terminal">
+        <BlurFade delay={BLUR_FADE_DELAY * 2} className="mx-auto w-full max-w-2xl">
+          <SshBanner />
+        </BlurFade>
       </section>
       {orderedSections.map((key) => (
         <React.Fragment key={key}>

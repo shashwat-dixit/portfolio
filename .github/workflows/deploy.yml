@@ -70,9 +70,26 @@ jobs:
         env:
           PUBLIC_API_URL: https://api.shashwatdixit.com
 
+  test-tui:
+    name: Test TUI
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tui
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: tui/go.mod
+          cache-dependency-path: tui/go.sum
+      - run: go vet ./...
+      - run: go test ./...
+      - run: go build ./...
+
   deploy:
     name: Deploy production
-    needs: [test-backend, test-frontend]
+    needs: [test-backend, test-frontend, test-tui]
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     environment:

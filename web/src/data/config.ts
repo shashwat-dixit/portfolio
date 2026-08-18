@@ -21,6 +21,7 @@ export const CONFIG = {
     url: "https://shashwatdixit.com",
     locale: "en_US",
     twitterHandle: "@shashwatmain",
+    sshCommand: "ssh shashwatdixit.com -p 2222",
   },
 
   // ---------------------------------------------------------------------------
