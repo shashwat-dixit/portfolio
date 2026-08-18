@@ -79,15 +79,20 @@ portfolio/
 │   │   │   └── post.go              # Post, Tag structs
 │   │   ├── repository/
 │   │   │   ├── post_repo.go         # PostgreSQL post queries
-│   │   │   └── tag_repo.go          # PostgreSQL tag queries
+│   │   │   ├── tag_repo.go          # PostgreSQL tag queries
+│   │   │   └── syndication_repo.go  # Medium / Substack remote IDs
 │   │   ├── service/
-│   │   │   ├── sync_service.go      # GitLab clone/pull, parse, upsert
+│   │   │   ├── sync_service.go      # GitLab clone/pull, parse, upsert, cross-post
+│   │   │   ├── syndication.go      # Cross-post orchestration
+│   │   │   ├── medium.go            # Medium REST API client
+│   │   │   ├── substack.go          # Substack draft/publish client
 │   │   │   ├── post_service.go      # Post retrieval logic
 │   │   │   └── markdown.go          # frontmatter parsing + md→HTML
 │   │   └── cache/
 │   │       └── redis.go             # Redis client, key patterns, invalidation
 │   ├── migrations/
-│   │   └── 001_initial.sql          # DDL for posts, tags, post_tags
+│   │   ├── 001_initial.sql          # DDL for posts, tags, post_tags
+│   │   └── 002_post_syndications.sql # Remote IDs for Medium / Substack
 │   ├── Dockerfile
 │   ├── go.mod
 │   └── go.sum
@@ -185,6 +190,17 @@ CREATE INDEX idx_posts_status       ON posts(status);
 CREATE INDEX idx_posts_published_at ON posts(published_at DESC);
 CREATE INDEX idx_posts_slug         ON posts(slug);
 CREATE INDEX idx_tags_slug          ON tags(slug);
+
+CREATE TABLE post_syndications (
+    post_id      UUID REFERENCES posts(id) ON DELETE CASCADE,
+    platform     TEXT NOT NULL CHECK (platform IN ('medium', 'substack')),
+    remote_id    TEXT NOT NULL,
+    remote_url   TEXT,
+    content_hash TEXT NOT NULL DEFAULT '',
+    created_at   TIMESTAMPTZ DEFAULT NOW(),
+    updated_at   TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (post_id, platform)
+);
 ```
 
 ## REST API
@@ -206,9 +222,11 @@ GET  /api/tags                    All tags with post counts
 
 POST /api/sync                    Trigger GitLab sync (protected)
      Header: X-API-Key: <secret>
-     Response: { synced, created, updated, deleted }
+     Response: { synced, created, updated, deleted,
+                 medium?: { created, updated, skipped, failed, errors? },
+                 substack?: { created, updated, skipped, failed, errors? } }
 
-GET  /api/feed.xml                RSS 2.0 feed
+GET  /api/feed.xml                RSS 2.0 feed (full HTML in content:encoded)
 
 GET  /api/health                  Health check
 ```
@@ -246,10 +264,46 @@ POST /api/sync (protected by X-API-Key)
   │     └─ If unchanged: skip
   ├─ 4. Delete DB posts whose slugs no longer exist in repo
   ├─ 5. Flush all Redis blog:* keys
-  └─ 6. Return sync summary
+  ├─ 6. Cross-post published articles to Medium / Substack when configured
+  └─ 7. Return sync summary
 ```
 
 Automated via GitHub Actions (Tuesday 9:00 AM IST / 3:30 AM UTC) in `.github/workflows/deploy.yml`.
+
+## Cross-posting (Medium and Substack)
+
+After the GitLab pull, `POST /api/sync` syndicates every **published** post that is new or whose content hash changed. Drafts and `writing` posts are never sent. Each platform is skipped when its credentials are unset, so local sync still works without them.
+
+Posts are recorded in `post_syndications` so a later sync will not create duplicates. Canonical URL is always `https://shashwatdixit.com/blog/{slug}` (or `SITE_URL`).
+
+| Platform | How it publishes | Updates | Default |
+| --- | --- | --- | --- |
+| **Medium** | Official REST API (`GET /v1/me`, then `POST /v1/users/{id}/posts`) | No — Medium cannot edit via API, so later edits stay on the site only | `MEDIUM_PUBLISH_STATUS=public` |
+| **Substack** | Unofficial publication API (`POST /api/v1/drafts`, optional publish) | Yes — changed posts are `PUT` back to the same draft/post | Drafts only (`SUBSTACK_PUBLISH=false`) |
+
+Add these to `.env` on the server (and restart the backend). They are **not** GitHub Actions secrets — the weekly `POST /api/sync` already runs on the host.
+
+```env
+# Medium — Settings → Security and apps → Integration tokens
+MEDIUM_TOKEN=your-integration-token
+# MEDIUM_PUBLICATION_ID=           # optional: post under a publication instead of your profile
+# MEDIUM_PUBLISH_STATUS=public     # public | draft | unlisted
+
+# Substack — Chrome DevTools → Application → Cookies → substack.com → substack.sid
+SUBSTACK_PUBLICATION_URL=https://yourname.substack.com
+SUBSTACK_SID=s%3A...your-session-cookie
+# SUBSTACK_CONNECT_SID=            # optional; defaults to the same value as SUBSTACK_SID
+# SUBSTACK_COOKIES=                # optional full Cookie header instead of SID
+# SUBSTACK_PUBLISH=false           # true publishes on Substack without emailing subscribers
+```
+
+Medium no longer issues integration tokens for many new accounts; existing tokens still work. If Settings has no Integration tokens section, leave `MEDIUM_TOKEN` empty.
+
+Substack has no official write API. The session cookie expires — when drafts stop appearing, copy a fresh `substack.sid` into `.env` and restart. `SUBSTACK_PUBLISH=true` publishes on the web with `send: false` so it does **not** email the list; review and send from Substack if you want an email.
+
+**RSS import (no cookie):** Substack Settings → Import accepts the site feed. `GET /api/feed.xml` now includes full HTML in `content:encoded`. Re-import with “Update existing posts” when you want a manual refresh. The API path is still better for ongoing weekly sync.
+
+A failed Medium/Substack call does not fail GitLab sync. Counts land on the sync JSON as `medium` / `substack`.
 
 ## Request Flow
 
@@ -311,6 +365,10 @@ Fill in the GitLab credentials in `.env`:
 GITLAB_REPO=https://gitlab.com/shashwat-dixit/blog.git
 GITLAB_TOKEN=glpat-xxxxxxxxxxxxxxxxxxxx
 SYNC_API_KEY=any-secret-string-for-local
+# Optional cross-post — see "Cross-posting (Medium and Substack)"
+# MEDIUM_TOKEN=
+# SUBSTACK_PUBLICATION_URL=https://yourname.substack.com
+# SUBSTACK_SID=
 ```
 
 The remaining values (PostgreSQL, Redis, CORS) are overridden by `docker-compose.local.yml` for local development — no need to change them.
@@ -345,6 +403,8 @@ You should see a response like:
 ```json
 {"synced":97,"created":97,"updated":0,"deleted":0}
 ```
+
+If Medium or Substack credentials are set, the same response includes `medium` and/or `substack` objects with `created`, `updated`, `skipped`, and `failed` counts.
 
 Re-run this command anytime you want to pull the latest posts.
 
@@ -448,7 +508,7 @@ You can also paste the raw `/llms.txt` or `/blog/<slug>.md` body into ChatGPT if
 1. Write markdown in GitLab repo (`status: writing`)
 2. When ready: set `status: published`, set `date`, commit and push
 3. Tuesday 9 AM IST: GitHub Actions triggers `POST /api/sync`
-4. Backend syncs: pulls repo, parses, upserts DB, flushes Redis cache
+4. Backend syncs: pulls repo, parses, upserts DB, flushes Redis cache, cross-posts published articles when Medium/Substack are configured
 5. Blog is live immediately (Astro SSR fetches fresh data)
 
 ## Deployment
@@ -581,6 +641,7 @@ The clone on the box should already be at `~/portfolio` with Docker Compose and 
 - [x] Tag repository — CRUD + counts
 - [x] Markdown service — frontmatter parsing (go-yaml) + goldmark HTML rendering
 - [x] Sync service — git clone/pull, walk .md files, diff + upsert
+- [x] Cross-post to Medium and Substack after sync (optional credentials)
 - [x] POST /api/sync handler (API key protected)
 - [x] GET /api/posts handler (pagination, tag filter)
 - [x] GET /api/posts/:slug handler
@@ -617,8 +678,8 @@ The clone on the box should already be at `~/portfolio` with Docker Compose and 
 
 - [x] Integrate Posthog for analytics
 - [ ] Add a newsletter functionality
-- [ ] Cross-post to Medium (REST API integration in sync service)
-- [ ] Cross-post to Substack (RSS feed import or API when available)
+- [x] Cross-post to Medium (REST API integration in sync service)
+- [x] Cross-post to Substack (RSS feed import or API when available)
 - [X] Cache the landing page and utilize bf cache when navigating back from blog
 - [x] Fix the click on dark mode button
 - [x] Serve markdown / llms.txt so ChatGPT and other agents can read the site

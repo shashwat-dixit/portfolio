@@ -152,6 +152,53 @@ func (r *PostRepo) GetBySlug(ctx context.Context, slug string) (*model.Post, []s
 	return &post, tags, nil
 }
 
+// ListPublishedFull returns published posts with markdown/HTML for feeds and cross-posting.
+// limit <= 0 returns every published post.
+func (r *PostRepo) ListPublishedFull(ctx context.Context, limit int) ([]model.SyndicatablePost, error) {
+	query := `
+		SELECT p.id, p.slug, p.title, p.description, p.content_md, p.content_html,
+			COALESCE(p.cover_image, ''), COALESCE(p.gitlab_sha, ''), p.published_at,
+			COALESCE(
+				(SELECT array_agg(t.name) FROM tags t JOIN post_tags pt ON pt.tag_id = t.id WHERE pt.post_id = p.id),
+				'{}'
+			) AS tags
+		FROM posts p
+		WHERE p.status = 'published'
+		ORDER BY p.published_at DESC NULLS LAST`
+	args := []any{}
+	if limit > 0 {
+		query += ` LIMIT $1`
+		args = append(args, limit)
+	}
+
+	rows, err := r.pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("list published full: %w", err)
+	}
+	defer rows.Close()
+
+	var posts []model.SyndicatablePost
+	for rows.Next() {
+		var p model.SyndicatablePost
+		var tags []string
+		if err := rows.Scan(
+			&p.ID, &p.Slug, &p.Title, &p.Description, &p.ContentMD, &p.ContentHTML,
+			&p.CoverImage, &p.ContentHash, &p.PublishedAt, &tags,
+		); err != nil {
+			return nil, fmt.Errorf("scan published full: %w", err)
+		}
+		if tags == nil {
+			tags = []string{}
+		}
+		p.Tags = tags
+		posts = append(posts, p)
+	}
+	if posts == nil {
+		posts = []model.SyndicatablePost{}
+	}
+	return posts, nil
+}
+
 func (r *PostRepo) Upsert(ctx context.Context, post *model.Post) (string, error) {
 	query := `
 		INSERT INTO posts (slug, title, description, content_md, content_html, cover_image, status, reading_time, author, published_at, updated_at, gitlab_sha)

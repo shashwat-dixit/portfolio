@@ -1,6 +1,9 @@
 package config
 
-import "os"
+import (
+	"os"
+	"strings"
+)
 
 type Config struct {
 	Port          string
@@ -14,6 +17,16 @@ type Config struct {
 	SyncAPIKey    string
 	CORSOrigins   []string
 	SiteURL       string
+
+	MediumToken         string
+	MediumPublicationID string
+	MediumPublishStatus string
+
+	SubstackPublicationURL string
+	SubstackSID            string
+	SubstackConnectSID     string
+	SubstackCookies        string
+	SubstackPublish        bool
 }
 
 func Load() *Config {
@@ -29,6 +42,16 @@ func Load() *Config {
 		SyncAPIKey:    getEnv("SYNC_API_KEY", ""),
 		CORSOrigins:   []string{getEnv("CORS_ORIGIN", "http://localhost:4321")},
 		SiteURL:       getEnv("SITE_URL", "https://shashwatdixit.com"),
+
+		MediumToken:         getEnv("MEDIUM_TOKEN", ""),
+		MediumPublicationID: getEnv("MEDIUM_PUBLICATION_ID", ""),
+		MediumPublishStatus: normalizePublishStatus(getEnv("MEDIUM_PUBLISH_STATUS", "public")),
+
+		SubstackPublicationURL: strings.TrimRight(getEnv("SUBSTACK_PUBLICATION_URL", ""), "/"),
+		SubstackSID:            getEnv("SUBSTACK_SID", ""),
+		SubstackConnectSID:     getEnv("SUBSTACK_CONNECT_SID", ""),
+		SubstackCookies:        getEnv("SUBSTACK_COOKIES", ""),
+		SubstackPublish:        getEnvBool("SUBSTACK_PUBLISH", false),
 	}
 }
 
@@ -37,4 +60,23 @@ func getEnv(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+func getEnvBool(key string, fallback bool) bool {
+	v := strings.TrimSpace(strings.ToLower(os.Getenv(key)))
+	if v == "" {
+		return fallback
+	}
+	return v == "true" || v == "1" || v == "yes"
+}
+
+func normalizePublishStatus(status string) string {
+	switch strings.ToLower(strings.TrimSpace(status)) {
+	case "draft":
+		return "draft"
+	case "unlisted":
+		return "unlisted"
+	default:
+		return "public"
+	}
 }

@@ -97,6 +97,14 @@ func (s *PostService) GetBySlug(ctx context.Context, slug string) (*model.Post, 
 	return post, tags, nil
 }
 
+func (s *PostService) ListForFeed(ctx context.Context, limit int) ([]model.SyndicatablePost, error) {
+	posts, err := s.postRepo.ListPublishedFull(ctx, limit)
+	if err != nil {
+		return nil, fmt.Errorf("list feed posts: %w", err)
+	}
+	return posts, nil
+}
+
 type cachedPost struct {
 	Post model.Post `json:"post"`
 	Tags []string   `json:"tags"`
